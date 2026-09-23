@@ -16,14 +16,10 @@ def run_search() -> None:
     ans = requests.get("http://localhost:8000/query", params=REQUEST)
     if ans.status_code == 200:
         for variant in ans.json()[0]:
-            #         variants_table.remove_rows(variants_table.rows),
-            #         # run_search(request),
-            #         ui.notify("Sent request formulary"),
-            #         variants_table.add_rows(run_search(REQUEST)["SNV"]),
             GENERAL_STATE["result_table_" + variant].remove_rows(
                 GENERAL_STATE["result_table_" + variant].rows
             )
-            GENERAL_STATE["result_table_" + variant].add_rows(ans.json()[0]["SNV"])
+            GENERAL_STATE["result_table_" + variant].add_rows(ans.json()[0][variant])
 
 
 def is_request_correct(request_form: dict) -> bool:
