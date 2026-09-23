@@ -1,4 +1,4 @@
 install:
 	pip install requests nicegui
-app:
+run:
 	python aede.py
