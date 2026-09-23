@@ -280,8 +280,6 @@ def search_page():
     # SEARCH
     search_button.on_click(lambda: (run_search(), ui.notify("Request sent to the API")))
 
-    # Variants result interaction.
-
 
 if __name__ in {"__main__", "__mp_main__"}:
     ui.run()
