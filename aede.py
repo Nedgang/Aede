@@ -23,11 +23,11 @@ chromosomes = sorted(
 )
 
 REQUEST = {
-    "variant_type": ["SNV"],
+    "variant_type": [variants_type[0]],
     "csq": [],
     "id": "",
     "gene": "",
-    "chr": 1,
+    "chr": chromosomes[0],
     "start": 0,
     "stop": 0,
     "only_pass": False,
