@@ -42,6 +42,39 @@ for bdd in variants_type:
     GENERAL_STATE.setdefault("details_variant_" + bdd, None)
 GENERAL_STATE["results"] = None
 
+details_label_column = {
+    "Chromosome": "chrom",
+    "Position": "pos",
+    "ID": "id",
+    "Reference": "ref",
+    "Alternative": "alt",
+    "Filter": "filter",
+    "DP": "dp",
+    "CSQ": "CSQ",
+}
+
+frequencies_label_column = {
+    "AC": "AC",
+    "AN": "AN",
+    "AF": "AF",
+    "AC_XX": "AC_XX",
+    "AN_XX": "AN_XX",
+    "AF_XX": "AF_XX",
+    "AC_XY": "AC_XY",
+    "AN_XY": "AN_XY",
+    "AF_XY": "AF_XY",
+    "grpmax": "grpmax",
+    "AC_grpmax": "AC_grpmax",
+    "AN_grpmax": "AN_grpmax",
+    "AF_grpmax": "AF_grpmax",
+}
+
+gnomAD_label_column = {
+    "Present in gnomAD": "inGnomad",
+    "Pass gnomAD QC": "passGnomad",
+    "Not covered by gnomAD": "notCoveredByGnomad",
+}
+
 
 #############
 # FUNCTIONS #
@@ -224,18 +257,42 @@ def search_page():
                         ui.tab("Frequencies")
                         ui.tab("gnomAD")
                     with ui.tab_panels(tabs, value=id_tab).classes("w-full"):
-                        with ui.tab_panel("Informations"):
-                            ui.label().bind_text_from(
-                                GENERAL_STATE["result_table_" + variant],
-                                "selected",
-                                backward=lambda a: (
-                                    f"AF: {a[0]['AF']}" if a != [] else ""
-                                ),
-                            )
-                        with ui.tab_panel("Frequencies"):
-                            ui.label("Variant frequencies")
+                        with ui.tab_panel("Informations"), ui.grid(columns=2):
+                            for detail in details_label_column:
+                                ui.label(detail)
+                                ui.label().bind_text_from(
+                                    GENERAL_STATE["result_table_" + variant],
+                                    "selected",
+                                    backward=lambda a, detail=detail: (
+                                        f"{a[0][details_label_column[detail]]}"
+                                        if a != []
+                                        else ""
+                                    ),
+                                )
+                        with ui.tab_panel("Frequencies"), ui.grid(columns=2):
+                            for detail in frequencies_label_column:
+                                ui.label(detail)
+                                ui.label().bind_text_from(
+                                    GENERAL_STATE["result_table_" + variant],
+                                    "selected",
+                                    backward=lambda a, detail=detail: (
+                                        f"{a[0][frequencies_label_column[detail]]}"
+                                        if a != []
+                                        else ""
+                                    ),
+                                )
                         with ui.tab_panel("gnomAD"):
-                            ui.label("Variant link to gnomAD")
+                            for detail in gnomAD_label_column:
+                                ui.label(detail)
+                                ui.label().bind_text_from(
+                                    GENERAL_STATE["result_table_" + variant],
+                                    "selected",
+                                    backward=lambda a, detail=detail: (
+                                        f"{a[0][gnomAD_label_column[detail]]}"
+                                        if a != []
+                                        else ""
+                                    ),
+                                )
 
     with ui.footer():
         ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
