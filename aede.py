@@ -25,7 +25,7 @@ chromosomes = sorted(
 REQUEST = {
     "variant_type": [variants_type[0]],
     "csq": [],
-    "id": "",
+    "id": "w5Ux3Tb71F03",
     "gene": "",
     "chr": chromosomes[0],
     "start": 0,
@@ -49,8 +49,8 @@ details_label_column = {
     "Reference": "ref",
     "Alternative": "alt",
     "Filter": "filter",
-    "DP": "dp",
-    "CSQ": "CSQ",
+    "DP": "DP",
+    "CSQ": "first_csq_symbol",
 }
 
 frequencies_label_column = {
@@ -91,6 +91,10 @@ def run_search() -> None:
                 GENERAL_STATE["result_table_" + variant].rows
             )
             GENERAL_STATE["result_table_" + variant].add_rows(ans.json()[0][variant])
+
+
+def reset_request() -> None:
+    pass
 
 
 def is_request_correct(request_form: dict) -> bool:
@@ -171,9 +175,14 @@ def search_page():
                 ui.button(
                     "Reset",
                     color="red",
+                    on_click=lambda: reset_request(),
                 )
-                search_button = ui.button(
+                ui.button(
                     "Search",
+                    on_click=lambda: (
+                        run_search(),
+                        ui.notify("Request sent to the API"),
+                    ),
                 )
 
         with ui.column().classes("w-3/5"):
@@ -186,7 +195,7 @@ def search_page():
                     ui.label(variant).classes("text-h5")
                     GENERAL_STATE["result_table_" + variant] = ui.table(
                         columns=[
-                            {"name": "chr", "label": "chr", "field": "chr"},
+                            {"name": "chr", "label": "chr", "field": "chrom"},
                             {
                                 "name": "pos",
                                 "label": "pos",
@@ -246,7 +255,7 @@ def search_page():
                             "headerClasses": "uppercase text-primary center"
                         },
                         selection="single",
-                    ).classes("w-full")
+                    ).classes("w-full h-9/10")
 
         with ui.column().classes("w-1/6"):
             for variant in variants_type:
@@ -348,9 +357,6 @@ def search_page():
             )
         ),
     )
-
-    # SEARCH
-    search_button.on_click(lambda: (run_search(), ui.notify("Request sent to the API")))
 
 
 if __name__ in {"__main__", "__mp_main__"}:
