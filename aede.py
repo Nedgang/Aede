@@ -1,8 +1,46 @@
 ##########
 # IMPORT #
 ##########
+import glob
+import os
+
 import requests
 from nicegui import ui
+
+####################
+# GLOBAL VARIABLES #
+####################
+# Finding options from data structure, which lead to automatic update of the front with
+# data upload
+variants_type = sorted([dir.name for dir in os.scandir("../Mneme/") if dir.is_dir()])
+chromosomes = sorted({chr.split("/")[-1] for chr in glob.iglob("../Mneme/*/chr*")})
+chromosomes = sorted(
+    {auto for auto in chromosomes if auto.split("chr")[-1].isdigit()},
+    key=lambda c: int(c.split("chr")[-1]),
+) + sorted(
+    {gono for gono in chromosomes if not gono.split("chr")[-1].isdigit()},
+    key=lambda c: c.split("chr")[-1],
+)
+
+REQUEST = {
+    "variant_type": ["SNV"],
+    "csq": [],
+    "id": "",
+    "gene": "",
+    "chr": 1,
+    "start": 0,
+    "stop": 0,
+    "only_pass": False,
+    "gnomad_regions": False,
+    "in_gnomad": False,
+    "pass_gnomad": False,
+}
+
+GENERAL_STATE = {bdd: bdd in REQUEST["variant_type"] for bdd in variants_type}
+for bdd in variants_type:
+    GENERAL_STATE.setdefault("result_table_" + bdd, None)
+    GENERAL_STATE.setdefault("details_variant_" + bdd, None)
+GENERAL_STATE["results"] = None
 
 
 #############
@@ -29,29 +67,6 @@ def is_request_correct(request_form: dict) -> bool:
 ########
 # MAIN #
 ########
-variants_type = ["SNV", "SV", "MEI", "STR"]
-
-REQUEST = {
-    "variant_type": ["SNV"],
-    "csq": [],
-    "id": "",
-    "gene": "",
-    "chr": 1,
-    "start": 0,
-    "stop": 0,
-    "only_pass": False,
-    "gnomad_regions": False,
-    "in_gnomad": False,
-    "pass_gnomad": False,
-}
-
-GENERAL_STATE = {bdd: bdd in REQUEST["variant_type"] for bdd in variants_type}
-for bdd in variants_type:
-    GENERAL_STATE.setdefault("result_table_" + bdd, None)
-    GENERAL_STATE.setdefault("details_variant_" + bdd, None)
-GENERAL_STATE["results"] = None
-
-
 @ui.page("/")
 def search_page():
     ui.dark_mode().enable()
@@ -87,7 +102,7 @@ def search_page():
             ui.input(label="Gene").bind_value(REQUEST, "gene")
             # Chromosome choice
             ui.select(
-                options={i: f"chr{i}" for i in range(1, 22)},
+                options=chromosomes,
                 label="Chromosome",
             ).bind_value(REQUEST, "chr").classes("w-full")
             # Selection start
