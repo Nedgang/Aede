@@ -43,12 +43,6 @@ REQUEST = {
     "pass_gnomad": False,
 }
 
-GENERAL_STATE = {bdd: bdd in REQUEST["variant_type"] for bdd in variants_type}
-for bdd in variants_type:
-    GENERAL_STATE.setdefault("result_table_" + bdd, None)
-    GENERAL_STATE.setdefault("details_variant_" + bdd, None)
-GENERAL_STATE["results"] = None
-
 details_label_column = {
     "Chromosome": "chrom",
     "Position": "pos",
@@ -82,6 +76,19 @@ gnomAD_label_column = {
     "Not covered by gnomAD": "notCoveredByGnomad",
 }
 
+GENERAL_STATE = {bdd: bdd in REQUEST["variant_type"] for bdd in variants_type}
+for bdd in variants_type:
+    GENERAL_STATE.setdefault("result_table_" + bdd, None)
+    GENERAL_STATE.setdefault(
+        "details_variant_" + bdd,
+        {
+            col: ""
+            for col in list(details_label_column.values())
+            + list(frequencies_label_column.values())
+            + list(gnomAD_label_column.values())
+        },
+    )
+
 
 #############
 # FUNCTIONS #
@@ -94,14 +101,41 @@ def run_search() -> None:
     ans = requests.get("http://localhost:8000/query", params=REQUEST)
     if ans.status_code == 200:
         for variant in ans.json()[0]:
-            GENERAL_STATE["result_table_" + variant].remove_rows(
-                GENERAL_STATE["result_table_" + variant].rows
+            GENERAL_STATE["result_table_" + variant].options["rowData"].clear()
+            GENERAL_STATE["result_table_" + variant].options["rowData"].extend(
+                ans.json()[0][variant]
             )
-            GENERAL_STATE["result_table_" + variant].add_rows(ans.json()[0][variant])
 
 
 def reset_request() -> None:
-    pass
+    REQUEST.update(
+        {
+            "variant_type": [variants_type[0]],
+            "csq": [],
+            "id": "w5Ux3Tb71F03",
+            "gene": "",
+            "chr": chromosomes[0],
+            "start": 0,
+            "stop": 0,
+            "only_pass": False,
+            "gnomad_regions": False,
+            "in_gnomad": False,
+            "pass_gnomad": False,
+        }
+    )
+
+
+async def output_selected_row(variant):
+    row = await GENERAL_STATE["result_table_" + variant].get_selected_row()
+    if row:
+        GENERAL_STATE["details_variant_" + variant] = row
+    else:
+        GENERAL_STATE["details_variant_" + variant] = {
+            col: ""
+            for col in list(details_label_column.values())
+            + list(frequencies_label_column.values())
+            + list(gnomAD_label_column.values())
+        }
 
 
 def is_request_correct(request_form: dict) -> bool:
@@ -200,72 +234,75 @@ def search_page():
                     .classes("w-full h-100")
                 ):
                     ui.label(variant).classes("text-h5")
-                    GENERAL_STATE["result_table_" + variant] = ui.table(
-                        columns=[
-                            {"name": "chr", "label": "chr", "field": "chrom"},
+                    GENERAL_STATE["result_table_" + variant] = (
+                        ui.aggrid(
                             {
-                                "name": "pos",
-                                "label": "pos",
-                                "field": "pos",
-                                "sortable": True,
+                                "columnDefs": [
+                                    {"name": "chr", "label": "chr", "field": "chrom"},
+                                    {
+                                        "name": "pos",
+                                        "label": "pos",
+                                        "field": "pos",
+                                    },
+                                    {
+                                        "name": "id",
+                                        "label": "id",
+                                        "field": "id",
+                                        "filter": "agTextColumnFilter",
+                                    },
+                                    {"name": "ref", "label": "ref", "field": "ref"},
+                                    {"name": "alt", "label": "alt", "field": "alt"},
+                                    {
+                                        "name": "filter",
+                                        "label": "filter",
+                                        "field": "filter",
+                                    },
+                                    {
+                                        "name": "AC",
+                                        "label": "AC",
+                                        "field": "AC",
+                                        "sortable": True,
+                                    },
+                                    {
+                                        "name": "AN",
+                                        "label": "AN",
+                                        "field": "AN",
+                                        "sortable": True,
+                                    },
+                                    {
+                                        "name": "AF",
+                                        "label": "AF",
+                                        "field": "AF",
+                                        "sortable": True,
+                                    },
+                                    {
+                                        "name": "AC_Hom",
+                                        "label": "AC_Hom",
+                                        "field": "AC_Hom",
+                                    },
+                                    {
+                                        "name": "in_gnomAD",
+                                        "label": "in_gnomAD",
+                                        "field": "in_gnomAD",
+                                    },
+                                    {
+                                        "name": "pass_gnomad",
+                                        "label": "pass_gnomad",
+                                        "field": "pass_gnomad",
+                                    },
+                                    {"name": "CSQ", "label": "CSQ", "field": "CSQ"},
+                                ],
+                                "rowData": [],
+                                "rowSelection": {"mode": "singleRow"},
                             },
-                            {
-                                "name": "id",
-                                "label": "id",
-                                "field": "id",
-                                "filter": "agNumberColumnFilter",
-                            },
-                            {"name": "ref", "label": "ref", "field": "ref"},
-                            {"name": "alt", "label": "alt", "field": "alt"},
-                            {
-                                "name": "filter",
-                                "label": "filter",
-                                "field": "filter",
-                            },
-                            {
-                                "name": "AC",
-                                "label": "AC",
-                                "field": "AC",
-                                "sortable": True,
-                            },
-                            {
-                                "name": "AN",
-                                "label": "AN",
-                                "field": "AN",
-                                "sortable": True,
-                            },
-                            {
-                                "name": "AF",
-                                "label": "AF",
-                                "field": "AF",
-                                "sortable": True,
-                            },
-                            {
-                                "name": "AC_Hom",
-                                "label": "AC_Hom",
-                                "field": "AC_Hom",
-                            },
-                            {
-                                "name": "in_gnomAD",
-                                "label": "in_gnomAD",
-                                "field": "in_gnomAD",
-                            },
-                            {
-                                "name": "pass_gnomad",
-                                "label": "pass_gnomad",
-                                "field": "pass_gnomad",
-                            },
-                            {"name": "CSQ", "label": "CSQ", "field": "CSQ"},
-                        ],
-                        rows=[],
-                        column_defaults={
-                            "headerClasses": "uppercase text-primary center",
-                            "align": "center",
-                            "width": "70px",
-                            "style": "text-wrap: wrap",
-                        },
-                        selection="single",
-                    ).classes("w-full h-9/10")
+                            theme="balham",
+                        )
+                        .on(
+                            "rowSelected",
+                            lambda _, variant=variant: output_selected_row(variant),
+                        )
+                        .classes("w-full h-9/10")
+                    )
 
         with ui.column().classes("w-1/6"):
             for variant in variants_type:
@@ -280,36 +317,30 @@ def search_page():
                             for detail in details_label_column:
                                 ui.label(detail)
                                 ui.label().bind_text_from(
-                                    GENERAL_STATE["result_table_" + variant],
-                                    "selected",
+                                    GENERAL_STATE,
+                                    "details_variant_" + variant,
                                     backward=lambda a, detail=detail: (
-                                        f"{a[0][details_label_column[detail]]}"
-                                        if a != []
-                                        else ""
+                                        f"{a[details_label_column[detail]]}"
                                     ),
                                 )
                         with ui.tab_panel("Frequencies"), ui.grid(columns=2):
-                            for detail in frequencies_label_column:
-                                ui.label(detail)
+                            for freq in frequencies_label_column:
+                                ui.label(freq)
                                 ui.label().bind_text_from(
-                                    GENERAL_STATE["result_table_" + variant],
-                                    "selected",
-                                    backward=lambda a, detail=detail: (
-                                        f"{a[0][frequencies_label_column[detail]]}"
-                                        if a != []
-                                        else ""
+                                    GENERAL_STATE,
+                                    "details_variant_" + variant,
+                                    backward=lambda a, freq=freq: (
+                                        f"{a[frequencies_label_column[freq]]}"
                                     ),
                                 )
-                        with ui.tab_panel("gnomAD"):
+                        with ui.tab_panel("gnomAD"), ui.grid(columns=2):
                             for detail in gnomAD_label_column:
                                 ui.label(detail)
                                 ui.label().bind_text_from(
-                                    GENERAL_STATE["result_table_" + variant],
-                                    "selected",
+                                    GENERAL_STATE,
+                                    "details_variant_" + variant,
                                     backward=lambda a, detail=detail: (
-                                        f"{a[0][gnomAD_label_column[detail]]}"
-                                        if a != []
-                                        else ""
+                                        f"{a[gnomAD_label_column[detail]]}"
                                     ),
                                 )
 
