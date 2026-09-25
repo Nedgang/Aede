@@ -283,14 +283,18 @@ def search_page():
                                     {
                                         "name": "in_gnomAD",
                                         "label": "in_gnomAD",
-                                        "field": "in_gnomAD",
+                                        "field": "inGnomad",
                                     },
                                     {
                                         "name": "pass_gnomad",
                                         "label": "pass_gnomad",
-                                        "field": "pass_gnomad",
+                                        "field": "passGnomad",
                                     },
-                                    {"name": "CSQ", "label": "CSQ", "field": "CSQ"},
+                                    {
+                                        "name": "CSQ",
+                                        "label": "CSQ",
+                                        "field": "first_csq_symbol",
+                                    },
                                 ],
                                 "rowData": [],
                                 "rowSelection": {"mode": "singleRow"},
