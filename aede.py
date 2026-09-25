@@ -113,7 +113,7 @@ def search_page():
         ui.input("Request")
         ui.button("Search")
 
-    with ui.row():
+    with ui.row().classes("w-full"):
         with ui.card().classes("w-1/6"):
             ui.label("Request").classes("text-h5")
             # Variant type selection
@@ -252,7 +252,10 @@ def search_page():
                         ],
                         rows=[],
                         column_defaults={
-                            "headerClasses": "uppercase text-primary center"
+                            "headerClasses": "uppercase text-primary center",
+                            "align": "center",
+                            "width": "70px",
+                            "style": "text-wrap: wrap",
                         },
                         selection="single",
                     ).classes("w-full h-9/10")
