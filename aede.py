@@ -13,12 +13,19 @@ from nicegui import ui
 # Finding options from data structure, which lead to automatic update of the front with
 # data upload
 variants_type = sorted([dir.name for dir in os.scandir("../Mneme/") if dir.is_dir()])
-chromosomes = sorted({chr.split("/")[-1] for chr in glob.iglob("../Mneme/*/chr*")})
 chromosomes = sorted(
-    {auto for auto in chromosomes if auto.split("chr")[-1].isdigit()},
+    {
+        auto
+        for auto in {chr.split("/")[-1] for chr in glob.iglob("../Mneme/*/chr*")}
+        if auto.split("chr")[-1].isdigit()
+    },
     key=lambda c: int(c.split("chr")[-1]),
 ) + sorted(
-    {gono for gono in chromosomes if not gono.split("chr")[-1].isdigit()},
+    {
+        gono
+        for gono in {chr.split("/")[-1] for chr in glob.iglob("../Mneme/*/chr*")}
+        if not gono.split("chr")[-1].isdigit()
+    },
     key=lambda c: c.split("chr")[-1],
 )
 
