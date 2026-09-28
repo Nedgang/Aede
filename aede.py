@@ -156,7 +156,7 @@ def search_page():
         ui.switch("Dark mode").bind_value(dark_mode)
 
     with ui.row().classes("w-full"):
-        with ui.card().classes("w-1/6"):
+        with ui.card().classes("w-3/20"):
             ui.label("Request").classes("text-h5")
             # Variant type selection
             ui.select(
@@ -227,7 +227,7 @@ def search_page():
                     ),
                 )
 
-        with ui.column().classes("w-3/5"):
+        with ui.column().classes("w-6/10"):
             for variant in variants_type:
                 with (
                     ui.card()
@@ -298,16 +298,21 @@ def search_page():
                                 ),
                             )
 
-        with ui.column().classes("w-1/6"):
+        with ui.column().classes("w-4/20"):
             for variant in variants_type:
-                with ui.card().bind_visibility(GENERAL_STATE, variant).classes("h-100"):
+                with (
+                    ui.card()
+                    .bind_visibility(GENERAL_STATE, variant)
+                    .classes("h-100 w-full")
+                ):
                     ui.label(f"Details on {variant}").classes("text-h5")
                     with ui.tabs().classes("w-full") as tabs:
-                        id_tab = ui.tab("Informations")
-                        ui.tab("Frequencies")
-                        ui.tab("gnomAD")
-                    with ui.tab_panels(tabs, value=id_tab).classes("w-full"):
-                        with ui.tab_panel("Informations"), ui.grid(columns=2):
+                        ui.tab("info")
+                        ui.tab("freq")
+                        ui.tab("gnomad")
+                        ui.tab("csq")
+                    with ui.tab_panels(tabs, value="info").classes("w-full"):
+                        with ui.tab_panel("info"), ui.grid(columns=2):
                             for detail in details_label_column:
                                 ui.label(detail)
                                 ui.label().bind_text_from(
@@ -317,7 +322,7 @@ def search_page():
                                         f"{a[details_label_column[detail]]}"
                                     ),
                                 )
-                        with ui.tab_panel("Frequencies"), ui.grid(columns=2):
+                        with ui.tab_panel("freq"), ui.grid(columns=2):
                             for freq in frequencies_label_column:
                                 ui.label(freq)
                                 ui.label().bind_text_from(
@@ -327,7 +332,7 @@ def search_page():
                                         f"{a[frequencies_label_column[freq]]}"
                                     ),
                                 )
-                        with ui.tab_panel("gnomAD"), ui.grid(columns=2):
+                        with ui.tab_panel("gnomad"), ui.grid(columns=2):
                             for detail in gnomAD_label_column:
                                 ui.label(detail)
                                 ui.label().bind_text_from(
@@ -337,6 +342,8 @@ def search_page():
                                         f"{a[gnomAD_label_column[detail]]}"
                                     ),
                                 )
+                        with ui.tab_panel("csq"):
+                            ui.label("CSQ details")
 
     with ui.footer():
         ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
