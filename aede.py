@@ -234,7 +234,9 @@ def search_page():
                     .bind_visibility(GENERAL_STATE, variant)
                     .classes("w-full h-100")
                 ):
-                    ui.label(variant).classes("text-h5")
+                    with ui.row():
+                        ui.label(variant).classes("text-h5")
+                        col_select = ui.button(icon="menu")
                     GENERAL_STATE["result_table_" + variant] = (
                         ui.aggrid(
                             {
@@ -271,6 +273,30 @@ def search_page():
                         )
                         .classes("w-full h-9/10")
                     )
+                    # Allowing columns selection
+                    with col_select, ui.menu(), ui.column().classes("'gap-0 p-2'"):
+                        for column in [
+                            i
+                            for i in GENERAL_STATE["result_table_" + variant].options[
+                                "columnDefs"
+                            ]
+                        ]:
+                            colname = (
+                                column["field"]
+                                if "headerName" not in column
+                                else column["headerName"]
+                            )
+                            ui.switch(
+                                colname,
+                                value=True,
+                                on_change=lambda e, variant=variant, column=column: (
+                                    GENERAL_STATE[
+                                        "result_table_" + variant
+                                    ].run_grid_method(
+                                        "setColumnsVisible", [column["field"]], e.value
+                                    )
+                                ),
+                            )
 
         with ui.column().classes("w-1/6"):
             for variant in variants_type:
