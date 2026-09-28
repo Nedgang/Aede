@@ -147,12 +147,13 @@ def is_request_correct(request_form: dict) -> bool:
 ########
 @ui.page("/")
 def search_page():
-    ui.dark_mode().enable()
+    dark_mode = ui.dark_mode()
     # PAGE & WIDGETS DESCRIPTION
     with ui.header().classes("items-center"):
         ui.label("POPGEN Online").classes("text-h3")
         ui.input("Request")
         ui.button("Search")
+        ui.switch("Dark mode").bind_value(dark_mode)
 
     with ui.row().classes("w-full"):
         with ui.card().classes("w-1/6"):
