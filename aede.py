@@ -29,7 +29,7 @@ def reset_request() -> dict:
     return {
         "variant_type": [variants_type[0]],
         "csq": [],
-        "id": "w5Ux3Tb71F03",
+        "id": "",
         "gene": "",
         "chr": chromosomes[0],
         "start": 0,
@@ -79,6 +79,13 @@ chromosomes = sorted(
     },
     key=lambda c: c.split("chr")[-1],
 )
+
+with open("../Mneme/genes.tsv") as file:
+    gene_to_chrom = {
+        line.strip().split("\t")[0]: line.strip().split("\t")[1]
+        for line in file
+        if line.strip().split("\t")[0] != "SYMBOL"
+    }
 
 REQUEST = reset_request()
 
@@ -158,28 +165,45 @@ def search_page():
             # Consequence selection
             with open("../Mneme/consequences.txt", "r") as file:
                 ui.select(
-                    options=([csq for csq in file]),
                     label="Variant consequence",
+                    options=([csq for csq in file]),
                     multiple=True,
                 ).bind_value(REQUEST, "csq").classes("w-full")
             # ID search
-            ui.input(label="Variant ID").bind_value(REQUEST, "id")
+            ui.input(label="Variant ID").bind_value(REQUEST, "id").classes("w-full")
             # Gene search
             # Or input chips + split?
-            ui.input(label="Gene").bind_value(REQUEST, "gene")
+            select_gene = (
+                ui.select(
+                    label="Gene",
+                    options=list(gene_to_chrom.keys()),
+                    with_input=True,
+                    clearable=True,
+                )
+                .bind_value(REQUEST, "gene")
+                .classes("w-full")
+            )
             # Chromosome choice
-            ui.select(
-                options=chromosomes,
-                label="Chromosome",
-            ).bind_value(REQUEST, "chr").classes("w-full")
+            select_chr = (
+                ui.select(
+                    label="Chromosome",
+                    options=chromosomes,
+                )
+                .bind_value(REQUEST, "chr")
+                .classes("w-1/2")
+            )
             # Selection start
-            start_value = ui.number(
-                label="Start", min=0, value=REQUEST["start"], precision=0
-            ).bind_value(REQUEST, "start")
+            start_value = (
+                ui.number(label="Start", min=0, value=REQUEST["start"], precision=0)
+                .bind_value(REQUEST, "start")
+                .classes("w-1/2")
+            )
             # Selection stop
-            stop_value = ui.number(
-                label="End", min=0, value=REQUEST["stop"], precision=0
-            ).bind_value(REQUEST, "stop")
+            stop_value = (
+                ui.number(label="End", min=0, value=REQUEST["stop"], precision=0)
+                .bind_value(REQUEST, "stop")
+                .classes("w-1/2")
+            )
             # Quality selection
             ui.switch("PASS variants only", value=REQUEST["only_pass"]).bind_value_to(
                 REQUEST, "only_pass"
@@ -360,6 +384,14 @@ def search_page():
         lambda: (
             in_gnomad_switch.set_value(True),
             gnomad_region_switch.set_value(True) if pass_gnomad_switch.value else None,
+        ),
+    )
+    select_gene.on_value_change(
+        lambda c, select_chr=select_chr: (
+            select_chr.set_value(gene_to_chrom[c.value])
+            if c.value is not None
+            else None,
+            select_chr.disable() if c.value is not None else select_chr.enable(),
         ),
     )
     # Start can't be higher than Stop
