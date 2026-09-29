@@ -7,6 +7,57 @@ import os
 import requests
 from nicegui import ui
 
+
+#############
+# FUNCTIONS #
+#############
+def run_search() -> None:
+    """
+    Send the get request to the API, handle the answer and return a dict with results
+    from database search.
+    """
+    ans = requests.get("http://localhost:8000/query", params=REQUEST)
+    if ans.status_code == 200:
+        for variant in ans.json()[0]:
+            GENERAL_STATE["result_table_" + variant].options["rowData"].clear()
+            GENERAL_STATE["result_table_" + variant].options["rowData"].extend(
+                ans.json()[0][variant]
+            )
+
+
+def reset_request() -> dict:
+    return {
+        "variant_type": [variants_type[0]],
+        "csq": [],
+        "id": "w5Ux3Tb71F03",
+        "gene": "",
+        "chr": chromosomes[0],
+        "start": 0,
+        "stop": 0,
+        "only_pass": False,
+        "gnomad_regions": False,
+        "in_gnomad": False,
+        "pass_gnomad": False,
+    }
+
+
+async def output_selected_row(variant):
+    row = await GENERAL_STATE["result_table_" + variant].get_selected_row()
+    if row:
+        GENERAL_STATE["details_variant_" + variant] = row
+    else:
+        GENERAL_STATE["details_variant_" + variant] = {
+            col: ""
+            for col in list(details_label_column.values())
+            + list(frequencies_label_column.values())
+            + list(gnomAD_label_column.values())
+        }
+
+
+def is_request_correct(request_form: dict) -> bool:
+    return False
+
+
 ####################
 # GLOBAL VARIABLES #
 ####################
@@ -29,19 +80,7 @@ chromosomes = sorted(
     key=lambda c: c.split("chr")[-1],
 )
 
-REQUEST = {
-    "variant_type": [variants_type[0]],
-    "csq": [],
-    "id": "w5Ux3Tb71F03",
-    "gene": "",
-    "chr": chromosomes[0],
-    "start": 0,
-    "stop": 0,
-    "only_pass": False,
-    "gnomad_regions": False,
-    "in_gnomad": False,
-    "pass_gnomad": False,
-}
+REQUEST = reset_request()
 
 details_label_column = {
     "Chromosome": "chrom",
@@ -88,58 +127,6 @@ for bdd in variants_type:
             + list(gnomAD_label_column.values())
         },
     )
-
-
-#############
-# FUNCTIONS #
-#############
-def run_search() -> None:
-    """
-    Send the get request to the API, handle the answer and return a dict with results
-    from database search.
-    """
-    ans = requests.get("http://localhost:8000/query", params=REQUEST)
-    if ans.status_code == 200:
-        for variant in ans.json()[0]:
-            GENERAL_STATE["result_table_" + variant].options["rowData"].clear()
-            GENERAL_STATE["result_table_" + variant].options["rowData"].extend(
-                ans.json()[0][variant]
-            )
-
-
-def reset_request() -> None:
-    REQUEST.update(
-        {
-            "variant_type": [variants_type[0]],
-            "csq": [],
-            "id": "w5Ux3Tb71F03",
-            "gene": "",
-            "chr": chromosomes[0],
-            "start": 0,
-            "stop": 0,
-            "only_pass": False,
-            "gnomad_regions": False,
-            "in_gnomad": False,
-            "pass_gnomad": False,
-        }
-    )
-
-
-async def output_selected_row(variant):
-    row = await GENERAL_STATE["result_table_" + variant].get_selected_row()
-    if row:
-        GENERAL_STATE["details_variant_" + variant] = row
-    else:
-        GENERAL_STATE["details_variant_" + variant] = {
-            col: ""
-            for col in list(details_label_column.values())
-            + list(frequencies_label_column.values())
-            + list(gnomAD_label_column.values())
-        }
-
-
-def is_request_correct(request_form: dict) -> bool:
-    return False
 
 
 ########
@@ -218,7 +205,7 @@ def search_page():
                 ui.button(
                     "Reset",
                     color="red",
-                    on_click=lambda: reset_request(),
+                    on_click=lambda: REQUEST.update(reset_request()),
                 )
                 ui.button(
                     "Search",
