@@ -150,7 +150,7 @@ def search_page():
         ui.switch("Dark mode").bind_value(dark_mode)
 
     with ui.row().classes("w-full"):
-        with ui.card().classes("w-3/20"):
+        with ui.card().classes("w-15/100"):
             ui.label("Request").classes("text-h5")
             # Variant type selection
             ui.select(
@@ -239,7 +239,7 @@ def search_page():
                     ),
                 )
 
-        with ui.column().classes("w-6/10"):
+        with ui.column().classes("w-62/100"):
             for variant in variants_type:
                 with (
                     ui.card()
@@ -310,7 +310,7 @@ def search_page():
                                 ),
                             )
 
-        with ui.column().classes("w-4/20"):
+        with ui.column().classes("w-20/100"):
             for variant in variants_type:
                 with (
                     ui.card()
