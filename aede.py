@@ -169,11 +169,12 @@ def search_page():
             ).bind_value(REQUEST, "variant_type").classes("w-full")
 
             # Consequence selection
-            ui.select(
-                options=(["missense_variant", "nosens", "synonyme"]),
-                label="Variant consequence",
-                multiple=True,
-            ).bind_value(REQUEST, "csq").classes("w-full")
+            with open("../Mneme/consequences.txt", "r") as file:
+                ui.select(
+                    options=([csq for csq in file]),
+                    label="Variant consequence",
+                    multiple=True,
+                ).bind_value(REQUEST, "csq").classes("w-full")
             # ID search
             ui.input(label="Variant ID").bind_value(REQUEST, "id")
             # Gene search
