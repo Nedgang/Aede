@@ -26,11 +26,14 @@ def run_search() -> None:
 
 
 def reset_request() -> dict:
+    """
+    Return basic dict for default request.
+    """
     return {
         "variant_type": [variants_type[0]],
         "csq": [],
         "id": "",
-        "gene": "",
+        "gene": None,
         "chr": chromosomes[0],
         "start": 0,
         "stop": 0,
