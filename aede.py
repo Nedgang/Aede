@@ -221,7 +221,8 @@ def search_page():
                     {var: var in REQUEST["variant_type"] for var in variants_type},
                 ),
             ).bind_value(REQUEST, "variant_type").classes("w-full")
-
+            # ID search
+            ui.input(label="Variant ID").bind_value(REQUEST, "id").classes("w-full")
             # Consequence selection
             with open("../Mneme/consequences.txt", "r") as file:
                 ui.select(
@@ -229,8 +230,6 @@ def search_page():
                     options=([csq for csq in file]),
                     multiple=True,
                 ).bind_value(REQUEST, "csq").classes("w-full")
-            # ID search
-            ui.input(label="Variant ID").bind_value(REQUEST, "id").classes("w-full")
             # Gene search
             # Or input chips + split?
             select_gene = (
