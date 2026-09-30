@@ -205,7 +205,7 @@ for bdd in variants_type:
 def search_page():
     dark_mode = ui.dark_mode()
     # PAGE & WIDGETS DESCRIPTION
-    with ui.header(fixed=False).classes("items-center"):
+    with ui.header(fixed=False).classes("items-center justify-between"):
         ui.label("POPGEN Online").classes("text-h3")
         ui.input("Request")
         ui.button("Search")
@@ -295,12 +295,13 @@ def search_page():
             ).bind_value(REQUEST, "pass_gnomad")
             # request = ui.textarea(label="Requête").bind_value_from(request, "chr")
             ui.separator()
-            with ui.row().classes():
+            with ui.row().classes("w-full"):
                 ui.button(
                     "Reset",
                     color="red",
                     on_click=lambda: REQUEST.update(reset_request()),
                 )
+                ui.space()
                 ui.button(
                     "Search",
                     on_click=lambda: (
