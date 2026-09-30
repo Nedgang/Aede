@@ -473,7 +473,22 @@ def search_page():
                                     ),
                                 )
                         with ui.tab_panel("csq"):
-                            ui.label("CSQ details")
+                            for i in [
+                                "Consequence",
+                                "IMPACT",
+                                "SYMBOL",
+                                "Gene",
+                                "Feature_type",
+                                "Feature",
+                                "BIOTYPE",
+                                "EXON",
+                                "INTRON",
+                                "CDS_position",
+                                "Protein_position",
+                                "Amino_acids",
+                                "Codons",
+                            ]:
+                                ui.label(i)
 
     with ui.footer():
         ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
