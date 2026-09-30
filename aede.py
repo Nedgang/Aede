@@ -17,7 +17,7 @@ def run_search() -> None:
     from database search.
     """
     ans = requests.get("http://localhost:8000/query", params=REQUEST)
-    if ans.status_code == 200:
+    if ans.ok:
         for variant in ans.json()[0]:
             GENERAL_STATE["result_table_" + variant].options["rowData"].clear()
             GENERAL_STATE["result_table_" + variant].options["rowData"].extend(
