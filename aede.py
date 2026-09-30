@@ -206,9 +206,9 @@ def search_page():
     dark_mode = ui.dark_mode()
     # PAGE & WIDGETS DESCRIPTION
     with ui.header(fixed=False).classes("items-center justify-between"):
-        ui.label("POPGEN Online").classes("text-h3")
-        ui.input("Request")
-        ui.button("Search")
+        ui.label("onlinePOPGEN").classes("text-h3")
+        # ui.input("Request")
+        # ui.button("Search")
         ui.switch("Dark mode").bind_value(dark_mode)
 
     with ui.row().classes("w-full"):
@@ -221,6 +221,9 @@ def search_page():
                 multiple=True,
                 on_change=lambda: GENERAL_STATE.update(
                     {var: var in REQUEST["variant_type"] for var in variants_type},
+                ),
+                validation=lambda b: (
+                    "Must select at least one variant type" if b == [] else None
                 ),
             ).bind_value(REQUEST, "variant_type").classes("w-full")
             # ID search
@@ -239,7 +242,7 @@ def search_page():
             ).bind_value(REQUEST, "impact").classes("w-full")
             # Feature
             ui.select(
-                label="Feature",
+                label="Feature ID",
                 options=["Feature 1", "Feature 2", "Feature 3"],
             ).bind_value(REQUEST, "feature").classes("w-full")
             # Gene search
