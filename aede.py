@@ -48,6 +48,34 @@ async def output_selected_row(variant):
     row = await GENERAL_STATE["result_table_" + variant].get_selected_row()
     if row:
         GENERAL_STATE["details_variant_" + variant] = row
+        GENERAL_STATE["details_table_" + variant].update_rows(
+            [
+                {
+                    "pop": "All",
+                    "AC": row["AC"],
+                    "AN": row["AN"],
+                    "AF": row["AF"],
+                },
+                {
+                    "pop": "XY",
+                    "AC": row["AC_XY"],
+                    "AN": row["AN_XY"],
+                    "AF": row["AF_XY"],
+                },
+                {
+                    "pop": "XX",
+                    "AC": row["AC_XX"],
+                    "AN": row["AN_XX"],
+                    "AF": row["AF_XX"],
+                },
+                {
+                    "pop": "grpmax",
+                    "AC": row["AC_grpmax"],
+                    "AN": row["AN_grpmax"],
+                    "AF": row["AF_grpmax"],
+                },
+            ]
+        )
     else:
         GENERAL_STATE["details_variant_" + variant] = {
             col: ""
@@ -55,6 +83,34 @@ async def output_selected_row(variant):
             + list(frequencies_label_column.values())
             + list(gnomAD_label_column.values())
         }
+        GENERAL_STATE["details_table_" + variant].update_rows(
+            [
+                {
+                    "pop": "All",
+                    "AC": "",
+                    "AN": "",
+                    "AF": "",
+                },
+                {
+                    "pop": "XY",
+                    "AC": "",
+                    "AN": "",
+                    "AF": "",
+                },
+                {
+                    "pop": "XX",
+                    "AC": "",
+                    "AN": "",
+                    "AF": "",
+                },
+                {
+                    "pop": "grpmax",
+                    "AC": "",
+                    "AN": "",
+                    "AF": "",
+                },
+            ]
+        )
 
 
 def is_request_correct(request_form: dict) -> bool:
@@ -107,6 +163,7 @@ frequencies_label_column = {
     "AC": "AC",
     "AN": "AN",
     "AF": "AF",
+    "AC_Hom": "AC_Hom",
     "AC_XX": "AC_XX",
     "AN_XX": "AN_XX",
     "AF_XX": "AF_XX",
@@ -337,16 +394,74 @@ def search_page():
                                         f"{a[details_label_column[detail]]}"
                                     ),
                                 )
-                        with ui.tab_panel("freq"), ui.grid(columns=2):
-                            for freq in frequencies_label_column:
-                                ui.label(freq)
-                                ui.label().bind_text_from(
-                                    GENERAL_STATE,
-                                    "details_variant_" + variant,
-                                    backward=lambda a, freq=freq: (
-                                        f"{a[frequencies_label_column[freq]]}"
-                                    ),
-                                )
+                        with ui.tab_panel("freq"):
+                            GENERAL_STATE["details_table_" + variant] = ui.table(
+                                columns=[
+                                    {
+                                        "name": "pop_type",
+                                        "label": "",
+                                        "field": "pop",
+                                        "align": "center",
+                                    },
+                                    {
+                                        "name": "AC",
+                                        "label": "AC",
+                                        "field": "AC",
+                                        "align": "center",
+                                        "sortable": True,
+                                    },
+                                    {
+                                        "name": "AN",
+                                        "label": "AN",
+                                        "field": "AN",
+                                        "align": "center",
+                                        "sortable": True,
+                                    },
+                                    {
+                                        "name": "AF",
+                                        "label": "AF",
+                                        "field": "AF",
+                                        "align": "center",
+                                        "sortable": True,
+                                    },
+                                ],
+                                rows=[
+                                    {
+                                        "pop": "All",
+                                        "AC": "",
+                                        "AN": "",
+                                        "AF": "",
+                                    },
+                                    {
+                                        "pop": "XY",
+                                        "AC": "",
+                                        "AN": "",
+                                        "AF": "",
+                                    },
+                                    {
+                                        "pop": "XX",
+                                        "AC": "",
+                                        "AN": "",
+                                        "AF": "",
+                                    },
+                                    {
+                                        "pop": "grpmax",
+                                        "AC": "",
+                                        "AN": "",
+                                        "AF": "",
+                                    },
+                                ],
+                            ).classes("w-full")
+                            with ui.grid(columns=2):
+                                for freq in ["grpmax", "AC_Hom"]:
+                                    ui.label(freq)
+                                    ui.label().bind_text_from(
+                                        GENERAL_STATE,
+                                        "details_variant_" + variant,
+                                        backward=lambda a, freq=freq: (
+                                            f"{a[frequencies_label_column[freq]]}"
+                                        ),
+                                    )
                         with ui.tab_panel("gnomad"), ui.grid(columns=2):
                             for detail in gnomAD_label_column:
                                 ui.label(detail)
