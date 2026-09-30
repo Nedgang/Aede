@@ -31,8 +31,10 @@ def reset_request() -> dict:
     """
     return {
         "variant_type": [variants_type[0]],
-        "csq": [],
         "id": "",
+        "csq": [],
+        "impact": "",
+        "feature": "",
         "gene": None,
         "chr": chromosomes[0],
         "start": 0,
@@ -203,7 +205,7 @@ for bdd in variants_type:
 def search_page():
     dark_mode = ui.dark_mode()
     # PAGE & WIDGETS DESCRIPTION
-    with ui.header().classes("items-center"):
+    with ui.header(fixed=False).classes("items-center"):
         ui.label("POPGEN Online").classes("text-h3")
         ui.input("Request")
         ui.button("Search")
@@ -230,8 +232,17 @@ def search_page():
                     options=([csq for csq in file]),
                     multiple=True,
                 ).bind_value(REQUEST, "csq").classes("w-full")
+            # Variant impact
+            ui.select(
+                label="Variant impact",
+                options=["pas de prot", "prot pas ouf", "prot comme le CAD"],
+            ).bind_value(REQUEST, "impact").classes("w-full")
+            # Feature
+            ui.select(
+                label="Feature",
+                options=["Feature 1", "Feature 2", "Feature 3"],
+            ).bind_value(REQUEST, "feature").classes("w-full")
             # Gene search
-            # Or input chips + split?
             select_gene = (
                 ui.select(
                     label="Gene",
@@ -452,7 +463,7 @@ def search_page():
                                 ],
                             ).classes("w-full")
                             with ui.grid(columns=2):
-                                for freq in ["grpmax", "AC_Hom"]:
+                                for freq in ["AC_Hom", "grpmax"]:
                                     ui.label(freq)
                                     ui.label().bind_text_from(
                                         GENERAL_STATE,
@@ -489,7 +500,7 @@ def search_page():
                             ]:
                                 ui.label(i)
 
-    with ui.footer():
+    with ui.footer(fixed=False):
         ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
 
     # WIDGETS INTERACTIONS
