@@ -115,10 +115,6 @@ async def output_selected_row(variant):
         )
 
 
-def is_request_correct(request_form: dict) -> bool:
-    return False
-
-
 ####################
 # GLOBAL VARIABLES #
 ####################
@@ -234,16 +230,19 @@ def search_page():
                     label="Variant consequence",
                     options=([csq for csq in file]),
                     multiple=True,
+                    clearable=True,
                 ).bind_value(REQUEST, "csq").classes("w-full")
             # Variant impact
             ui.select(
                 label="Variant impact",
                 options=["pas de prot", "prot pas ouf", "prot comme le CAD"],
+                clearable=True,
             ).bind_value(REQUEST, "impact").classes("w-full")
             # Feature
             ui.select(
                 label="Feature ID",
                 options=["Feature 1", "Feature 2", "Feature 3"],
+                clearable=True,
             ).bind_value(REQUEST, "feature").classes("w-full")
             # Gene search
             select_gene = (
