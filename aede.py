@@ -225,16 +225,17 @@ def search_page():
             # ID search
             ui.input(label="Variant ID").bind_value(REQUEST, "id").classes("w-full")
             # Variant impact
-            ui.select(
-                label="Variant impact",
-                options=["pas de prot", "prot pas ouf", "prot comme le CAD"],
-                clearable=True,
-            ).bind_value(REQUEST, "impact").classes("w-full")
+            with open("../Mneme/impact.txt", "r") as file:
+                ui.select(
+                    label="Variant impact",
+                    options=[impact for impact in file],
+                    clearable=True,
+                ).bind_value(REQUEST, "impact").classes("w-full")
             # Consequence selection
             with open("../Mneme/consequences.txt", "r") as file:
                 ui.select(
                     label="Variant consequence",
-                    options=([csq for csq in file]),
+                    options=[csq for csq in file],
                     multiple=True,
                     clearable=True,
                 ).bind_value(REQUEST, "csq").classes("w-full")
