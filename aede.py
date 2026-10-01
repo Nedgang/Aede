@@ -240,11 +240,12 @@ def search_page():
                     clearable=True,
                 ).bind_value(REQUEST, "csq").classes("w-full")
             # Feature
-            ui.select(
-                label="Feature ID",
-                options=["Feature 1", "Feature 2", "Feature 3"],
-                clearable=True,
-            ).bind_value(REQUEST, "feature").classes("w-full")
+            with open("../Mneme/feature.txt", "r") as file:
+                ui.select(
+                    label="Feature ID",
+                    options=[feature for feature in file],
+                    clearable=True,
+                ).bind_value(REQUEST, "feature").classes("w-full")
             # Gene search
             select_gene = (
                 ui.select(
