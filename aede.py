@@ -33,8 +33,8 @@ def reset_request() -> dict:
         "variant_type": [variants_type[0]],
         "id": "",
         "csq": [],
-        "impact": "",
-        "feature": "",
+        "impact": [],
+        "feature": [],
         "gene": None,
         "chr": chromosomes[0],
         "start": 0,
@@ -229,6 +229,8 @@ def search_page():
                 ui.select(
                     label="Variant impact",
                     options=[impact for impact in file],
+                    with_input=True,
+                    multiple=True,
                     clearable=True,
                 ).bind_value(REQUEST, "impact").classes("w-full")
             # Consequence selection
@@ -236,6 +238,7 @@ def search_page():
                 ui.select(
                     label="Variant consequence",
                     options=[csq for csq in file],
+                    with_input=True,
                     multiple=True,
                     clearable=True,
                 ).bind_value(REQUEST, "csq").classes("w-full")
@@ -244,6 +247,8 @@ def search_page():
                 ui.select(
                     label="Feature ID",
                     options=[feature for feature in file],
+                    with_input=True,
+                    multiple=True,
                     clearable=True,
                 ).bind_value(REQUEST, "feature").classes("w-full")
             # Gene search
