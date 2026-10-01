@@ -224,6 +224,12 @@ def search_page():
             ).bind_value(REQUEST, "variant_type").classes("w-full")
             # ID search
             ui.input(label="Variant ID").bind_value(REQUEST, "id").classes("w-full")
+            # Variant impact
+            ui.select(
+                label="Variant impact",
+                options=["pas de prot", "prot pas ouf", "prot comme le CAD"],
+                clearable=True,
+            ).bind_value(REQUEST, "impact").classes("w-full")
             # Consequence selection
             with open("../Mneme/consequences.txt", "r") as file:
                 ui.select(
@@ -232,12 +238,6 @@ def search_page():
                     multiple=True,
                     clearable=True,
                 ).bind_value(REQUEST, "csq").classes("w-full")
-            # Variant impact
-            ui.select(
-                label="Variant impact",
-                options=["pas de prot", "prot pas ouf", "prot comme le CAD"],
-                clearable=True,
-            ).bind_value(REQUEST, "impact").classes("w-full")
             # Feature
             ui.select(
                 label="Feature ID",
