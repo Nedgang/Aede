@@ -23,6 +23,8 @@ def run_search() -> None:
             GENERAL_STATE["result_table_" + variant].options["rowData"].extend(
                 ans.json()[0][variant]
             )
+    else:
+        ui.notify(ans.json()["detail"], type="negative")
 
 
 def reset_request() -> dict:
