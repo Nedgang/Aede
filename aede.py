@@ -384,12 +384,13 @@ def search_page():
                             ),
                         )
             with ui.card().classes("w-23/100 h-105"):
-                ui.label(f"Details on {variant}").classes("text-h5")
+                with ui.row():
+                    ui.label(f"Details on {variant}").classes("text-h5")
+                    ui.switch("CSQ panel")
                 with ui.tabs().classes("w-full") as tabs:
                     ui.tab("info")
                     ui.tab("freq")
                     ui.tab("gnomad")
-                    ui.tab("csq")
                 with ui.tab_panels(tabs, value="info").classes("w-full"):
                     with ui.tab_panel("info"), ui.grid(columns=2):
                         for detail in details_label_column:
@@ -459,37 +460,42 @@ def search_page():
                                     f"{a[gnomAD_label_column[detail]]}"
                                 ),
                             )
-                    with ui.tab_panel("csq"):
-                        ui.select(
-                            label="Select a feature",
-                            options=["ENS0001", "ENS0002"],
-                        ).classes("w-full")
-                        with ui.row().classes("w-full"):
-                            ui.button("Clear").props("color=red")
-                            ui.space()
-                            ui.button("Search")
-        # for i in [
-        #     "Consequence",
-        #     "IMPACT",
-        #     "SYMBOL",
-        #     "Gene",
-        #     "Feature_type",
-        #     "Feature",
-        #     "BIOTYPE",
-        #     "EXON",
-        #     "INTRON",
-        #     "CDS_position",
-        #     "Protein_position",
-        #     "Amino_acids",
-        #     "Codons",
-        # ]:
-        #     ui.label(i)
-        # Variants result row
+        # CSQ result row
         with ui.row().classes("w-full").bind_visibility(GENERAL_STATE, variant):
             with ui.card().classes("w-23/100 h-105"):
-                ui.label("test")
+                ui.label(f"Feature affected from {variant} variant").classes("text-h5")
+                ui.select(
+                    label="Select a feature",
+                    options=["ENS0001", "ENS0002"],
+                ).classes("w-full")
+                with ui.row().classes("w-full"):
+                    ui.button("Clear").props("color=red")
+                    ui.space()
+                    ui.button("Search")
             with ui.card().classes("w-75/100 h-105"):
-                ui.label("test 2")
+                ui.label(f"CSQ on {variant}").classes("text-h5")
+                ui.aggrid(
+                    {
+                        "columnDefs": [
+                            {"field": "Consequence"},
+                            {"field": "impact"},
+                            {"field": "symbol"},
+                            {"field": "gene"},
+                            {"field": "feature_type"},
+                            {"field": "feature"},
+                            {"field": "biotype"},
+                            {"field": "exon"},
+                            {"field": "intron"},
+                            {"field": "cds_position"},
+                            {"field": "amino_acids"},
+                            {"field": "codon"},
+                        ],
+                        "rowData": [],
+                        "rowSelection": {"mode": "None"},
+                    },
+                    theme="balham",
+                    auto_size_columns=True,
+                ).classes("w-full h-9/10")
 
     with ui.footer(fixed=False):
         ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
