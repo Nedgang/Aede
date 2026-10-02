@@ -489,22 +489,29 @@ def search_page():
                                     ),
                                 )
                         with ui.tab_panel("csq"):
-                            for i in [
-                                "Consequence",
-                                "IMPACT",
-                                "SYMBOL",
-                                "Gene",
-                                "Feature_type",
-                                "Feature",
-                                "BIOTYPE",
-                                "EXON",
-                                "INTRON",
-                                "CDS_position",
-                                "Protein_position",
-                                "Amino_acids",
-                                "Codons",
-                            ]:
-                                ui.label(i)
+                            ui.select(
+                                label="Select a feature", options=["ENS0001", "ENS0002"]
+                            ).classes("w-full")
+                            with ui.row().classes("w-full"):
+                                ui.button("Clear").props("color=red")
+                                ui.space()
+                                ui.button("Search")
+                            # for i in [
+                            #     "Consequence",
+                            #     "IMPACT",
+                            #     "SYMBOL",
+                            #     "Gene",
+                            #     "Feature_type",
+                            #     "Feature",
+                            #     "BIOTYPE",
+                            #     "EXON",
+                            #     "INTRON",
+                            #     "CDS_position",
+                            #     "Protein_position",
+                            #     "Amino_acids",
+                            #     "Codons",
+                            # ]:
+                            #     ui.label(i)
 
     with ui.footer(fixed=False):
         ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
