@@ -23,6 +23,7 @@ def run_search() -> None:
             GENERAL_STATE["result_table_" + variant].options["rowData"].extend(
                 ans.json()[0][variant]
             )
+        ui.notify("Results received!")
     else:
         ui.notify(ans.json()["detail"], type="negative")
 
@@ -332,39 +333,15 @@ def search_page():
                         {
                             "columnDefs": [
                                 {"field": "chrom"},
-                                {
-                                    "field": "pos",
-                                    "filter": "agNumberColumnFilter",
-                                },
+                                {"field": "pos", "filter": "agNumberColumnFilter"},
                                 {"field": "id", "filter": "agTextColumnFilter"},
-                                {
-                                    "field": "ref",
-                                    "filter": "agTextColumnFilter",
-                                },
-                                {
-                                    "field": "alt",
-                                    "filter": "agTextColumnFilter",
-                                },
-                                {
-                                    "field": "filter",
-                                    "filter": "agTextColumnFilter",
-                                },
-                                {
-                                    "field": "AC",
-                                    "filter": "agNumberColumnFilter",
-                                },
-                                {
-                                    "field": "AN",
-                                    "filter": "agNumberColumnFilter",
-                                },
-                                {
-                                    "field": "AF",
-                                    "filter": "agNumberColumnFilter",
-                                },
-                                {
-                                    "field": "AC_Hom",
-                                    "filter": "agNumberColumnFilter",
-                                },
+                                {"field": "ref", "filter": "agTextColumnFilter"},
+                                {"field": "alt", "filter": "agTextColumnFilter"},
+                                {"field": "filter", "filter": "agTextColumnFilter"},
+                                {"field": "AC", "filter": "agNumberColumnFilter"},
+                                {"field": "AN", "filter": "agNumberColumnFilter"},
+                                {"field": "AF", "filter": "agNumberColumnFilter"},
+                                {"field": "AC_Hom", "filter": "agNumberColumnFilter"},
                                 {"field": "inGnomad"},
                                 {"field": "passGnomad"},
                             ],
@@ -511,22 +488,28 @@ def search_page():
                             ui.button("Clear").props("color=red")
                             ui.space()
                             ui.button("Search")
-    # for i in [
-    #     "Consequence",
-    #     "IMPACT",
-    #     "SYMBOL",
-    #     "Gene",
-    #     "Feature_type",
-    #     "Feature",
-    #     "BIOTYPE",
-    #     "EXON",
-    #     "INTRON",
-    #     "CDS_position",
-    #     "Protein_position",
-    #     "Amino_acids",
-    #     "Codons",
-    # ]:
-    #     ui.label(i)
+        # for i in [
+        #     "Consequence",
+        #     "IMPACT",
+        #     "SYMBOL",
+        #     "Gene",
+        #     "Feature_type",
+        #     "Feature",
+        #     "BIOTYPE",
+        #     "EXON",
+        #     "INTRON",
+        #     "CDS_position",
+        #     "Protein_position",
+        #     "Amino_acids",
+        #     "Codons",
+        # ]:
+        #     ui.label(i)
+        # Variants result row
+        with ui.row().classes("w-full").bind_visibility(GENERAL_STATE, variant):
+            with ui.card().classes("w-23/100 h-100"):
+                ui.label("test")
+            with ui.card().classes("w-75/100 h-100"):
+                ui.label("test 2")
 
     with ui.footer(fixed=False):
         ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
