@@ -200,342 +200,333 @@ for bdd in variants_type:
 ########
 @ui.page("/")
 def search_page():
-    dark_mode = ui.dark_mode()
     # PAGE & WIDGETS DESCRIPTION
-    with ui.header(fixed=False).classes("items-center justify-between"):
+    left_drawer = ui.left_drawer(bordered=True, elevated=True)
+    with ui.header().classes("items-center justify-between"):
         ui.label("onlinePOPGEN").classes("text-h3")
-        # ui.input("Request")
         # ui.button("Search")
-        ui.switch("Dark mode").bind_value(dark_mode)
+        ui.switch("Dark mode").bind_value(ui.dark_mode())
+
+    with left_drawer, ui.card().classes("w-full"):
+        ui.label("Request").classes("text-h5")
+        # Variant type selection
+        ui.select(
+            options=(variants_type),
+            label="Variant type",
+            multiple=True,
+            on_change=lambda: GENERAL_STATE.update(
+                {var: var in REQUEST["variant_type"] for var in variants_type},
+            ),
+            validation=lambda b: (
+                "Must select at least one variant type" if b == [] else None
+            ),
+        ).bind_value(REQUEST, "variant_type").classes("w-full")
+        # ID search
+        ui.input(label="Variant ID").bind_value(REQUEST, "id").classes("w-full")
+        # Variant impact
+        with open("../Mneme/impact.txt", "r") as file:
+            ui.select(
+                label="Variant impact",
+                options=[impact for impact in file],
+                with_input=True,
+                multiple=True,
+                clearable=True,
+            ).bind_value(REQUEST, "impact").classes("w-full")
+        # Consequence selection
+        with open("../Mneme/consequences.txt", "r") as file:
+            ui.select(
+                label="Variant consequence",
+                options=[csq for csq in file],
+                with_input=True,
+                multiple=True,
+                clearable=True,
+            ).bind_value(REQUEST, "csq").classes("w-full")
+        # Feature
+        with open("../Mneme/feature.txt", "r") as file:
+            ui.select(
+                label="Feature ID",
+                options=[feature for feature in file],
+                with_input=True,
+                multiple=True,
+                clearable=True,
+            ).bind_value(REQUEST, "feature").classes("w-full")
+        # Gene search
+        select_gene = (
+            ui.select(
+                label="Gene",
+                options=list(gene_to_chrom.keys()),
+                with_input=True,
+                clearable=True,
+            )
+            .bind_value(REQUEST, "gene")
+            .classes("w-full")
+        )
+        # Chromosome choice
+        select_chr = (
+            ui.select(
+                label="Chromosome",
+                options=chromosomes,
+            )
+            .bind_value(REQUEST, "chr")
+            .classes("w-1/2")
+        )
+        # Selection start
+        start_value = (
+            ui.number(label="Start", min=0, value=REQUEST["start"], precision=0)
+            .bind_value(REQUEST, "start")
+            .classes("w-1/2")
+        )
+        # Selection stop
+        stop_value = (
+            ui.number(label="End", min=0, value=REQUEST["stop"], precision=0)
+            .bind_value(REQUEST, "stop")
+            .classes("w-1/2")
+        )
+        # Quality selection
+        ui.switch("PASS variants only", value=REQUEST["only_pass"]).bind_value_to(
+            REQUEST, "only_pass"
+        )
+        # gnomAD covered region
+        gnomad_region_switch = ui.switch(
+            "gnomAD covered regions only",
+            value=REQUEST["gnomad_regions"],
+        ).bind_value(REQUEST, "gnomad_regions")
+        # in_gnomAD
+        in_gnomad_switch = ui.switch(
+            "Variant in gnomAD",
+            value=REQUEST["in_gnomad"],
+        ).bind_value(REQUEST, "in_gnomad")
+        # pass_gnomAD
+        pass_gnomad_switch = ui.switch(
+            "Variant pass in gnomAD",
+            value=REQUEST["pass_gnomad"],
+        ).bind_value(REQUEST, "pass_gnomad")
+        # request = ui.textarea(label="Requête").bind_value_from(request, "chr")
+        ui.separator()
+        with ui.row().classes("w-full"):
+            ui.button(
+                "Reset",
+                color="red",
+                on_click=lambda: REQUEST.update(reset_request()),
+            )
+            ui.space()
+            ui.button(
+                "Search",
+                on_click=lambda left_drawer=left_drawer: (
+                    run_search(),
+                    ui.notify("Request sent to the API"),
+                ),
+            )
 
     with ui.row().classes("w-full"):
-        with ui.card().classes("w-15/100"):
-            ui.label("Request").classes("text-h5")
-            # Variant type selection
-            ui.select(
-                options=(variants_type),
-                label="Variant type",
-                multiple=True,
-                on_change=lambda: GENERAL_STATE.update(
-                    {var: var in REQUEST["variant_type"] for var in variants_type},
-                ),
-                validation=lambda b: (
-                    "Must select at least one variant type" if b == [] else None
-                ),
-            ).bind_value(REQUEST, "variant_type").classes("w-full")
-            # ID search
-            ui.input(label="Variant ID").bind_value(REQUEST, "id").classes("w-full")
-            # Variant impact
-            with open("../Mneme/impact.txt", "r") as file:
-                ui.select(
-                    label="Variant impact",
-                    options=[impact for impact in file],
-                    with_input=True,
-                    multiple=True,
-                    clearable=True,
-                ).bind_value(REQUEST, "impact").classes("w-full")
-            # Consequence selection
-            with open("../Mneme/consequences.txt", "r") as file:
-                ui.select(
-                    label="Variant consequence",
-                    options=[csq for csq in file],
-                    with_input=True,
-                    multiple=True,
-                    clearable=True,
-                ).bind_value(REQUEST, "csq").classes("w-full")
-            # Feature
-            with open("../Mneme/feature.txt", "r") as file:
-                ui.select(
-                    label="Feature ID",
-                    options=[feature for feature in file],
-                    with_input=True,
-                    multiple=True,
-                    clearable=True,
-                ).bind_value(REQUEST, "feature").classes("w-full")
-            # Gene search
-            select_gene = (
-                ui.select(
-                    label="Gene",
-                    options=list(gene_to_chrom.keys()),
-                    with_input=True,
-                    clearable=True,
-                )
-                .bind_value(REQUEST, "gene")
-                .classes("w-full")
-            )
-            # Chromosome choice
-            select_chr = (
-                ui.select(
-                    label="Chromosome",
-                    options=chromosomes,
-                )
-                .bind_value(REQUEST, "chr")
-                .classes("w-1/2")
-            )
-            # Selection start
-            start_value = (
-                ui.number(label="Start", min=0, value=REQUEST["start"], precision=0)
-                .bind_value(REQUEST, "start")
-                .classes("w-1/2")
-            )
-            # Selection stop
-            stop_value = (
-                ui.number(label="End", min=0, value=REQUEST["stop"], precision=0)
-                .bind_value(REQUEST, "stop")
-                .classes("w-1/2")
-            )
-            # Quality selection
-            ui.switch("PASS variants only", value=REQUEST["only_pass"]).bind_value_to(
-                REQUEST, "only_pass"
-            )
-            # gnomAD covered region
-            gnomad_region_switch = ui.switch(
-                "gnomAD covered regions only",
-                value=REQUEST["gnomad_regions"],
-            ).bind_value(REQUEST, "gnomad_regions")
-            # in_gnomAD
-            in_gnomad_switch = ui.switch(
-                "Variant in gnomAD",
-                value=REQUEST["in_gnomad"],
-            ).bind_value(REQUEST, "in_gnomad")
-            # pass_gnomAD
-            pass_gnomad_switch = ui.switch(
-                "Variant pass in gnomAD",
-                value=REQUEST["pass_gnomad"],
-            ).bind_value(REQUEST, "pass_gnomad")
-            # request = ui.textarea(label="Requête").bind_value_from(request, "chr")
-            ui.separator()
-            with ui.row().classes("w-full"):
-                ui.button(
-                    "Reset",
-                    color="red",
-                    on_click=lambda: REQUEST.update(reset_request()),
-                )
-                ui.space()
-                ui.button(
-                    "Search",
-                    on_click=lambda: (
-                        run_search(),
-                        ui.notify("Request sent to the API"),
-                    ),
-                )
-
-        with ui.column().classes("w-82/100"):
-            for variant in variants_type:
-                with ui.row().classes("w-full").bind_visibility(GENERAL_STATE, variant):
-                    with (
-                        ui.card().classes("w-75/100 h-100"),
-                    ):
-                        with ui.row():
-                            ui.label(variant).classes("text-h5")
-                            col_select = ui.button(icon="menu")
-                        GENERAL_STATE["result_table_" + variant] = (
-                            ui.aggrid(
-                                {
-                                    "columnDefs": [
-                                        {"field": "chrom"},
-                                        {
-                                            "field": "pos",
-                                            "filter": "agNumberColumnFilter",
-                                        },
-                                        {"field": "id", "filter": "agTextColumnFilter"},
-                                        {
-                                            "field": "ref",
-                                            "filter": "agTextColumnFilter",
-                                        },
-                                        {
-                                            "field": "alt",
-                                            "filter": "agTextColumnFilter",
-                                        },
-                                        {
-                                            "field": "filter",
-                                            "filter": "agTextColumnFilter",
-                                        },
-                                        {
-                                            "field": "AC",
-                                            "filter": "agNumberColumnFilter",
-                                        },
-                                        {
-                                            "field": "AN",
-                                            "filter": "agNumberColumnFilter",
-                                        },
-                                        {
-                                            "field": "AF",
-                                            "filter": "agNumberColumnFilter",
-                                        },
-                                        {
-                                            "field": "AC_Hom",
-                                            "filter": "agNumberColumnFilter",
-                                        },
-                                        {"field": "inGnomad"},
-                                        {"field": "passGnomad"},
-                                    ],
-                                    "rowData": [],
-                                    "rowSelection": {"mode": "singleRow"},
-                                },
-                                theme="balham",
-                            )
-                            .on(
-                                "rowSelected",
-                                lambda _, variant=variant: output_selected_row(variant),
-                            )
-                            .classes("w-full h-9/10")
+        for variant in variants_type:
+            with ui.row().classes("w-full").bind_visibility(GENERAL_STATE, variant):
+                with (
+                    ui.card().classes("w-75/100 h-100"),
+                ):
+                    with ui.row():
+                        ui.label(variant).classes("text-h5")
+                        col_select = ui.button(icon="menu")
+                    GENERAL_STATE["result_table_" + variant] = (
+                        ui.aggrid(
+                            {
+                                "columnDefs": [
+                                    {"field": "chrom"},
+                                    {
+                                        "field": "pos",
+                                        "filter": "agNumberColumnFilter",
+                                    },
+                                    {"field": "id", "filter": "agTextColumnFilter"},
+                                    {
+                                        "field": "ref",
+                                        "filter": "agTextColumnFilter",
+                                    },
+                                    {
+                                        "field": "alt",
+                                        "filter": "agTextColumnFilter",
+                                    },
+                                    {
+                                        "field": "filter",
+                                        "filter": "agTextColumnFilter",
+                                    },
+                                    {
+                                        "field": "AC",
+                                        "filter": "agNumberColumnFilter",
+                                    },
+                                    {
+                                        "field": "AN",
+                                        "filter": "agNumberColumnFilter",
+                                    },
+                                    {
+                                        "field": "AF",
+                                        "filter": "agNumberColumnFilter",
+                                    },
+                                    {
+                                        "field": "AC_Hom",
+                                        "filter": "agNumberColumnFilter",
+                                    },
+                                    {"field": "inGnomad"},
+                                    {"field": "passGnomad"},
+                                ],
+                                "rowData": [],
+                                "rowSelection": {"mode": "singleRow"},
+                            },
+                            theme="balham",
+                            auto_size_columns=True,
                         )
-                        # Allowing columns selection
-                        with col_select, ui.menu(), ui.column().classes("'gap-0 p-2'"):
-                            for column in [
-                                i
-                                for i in GENERAL_STATE[
-                                    "result_table_" + variant
-                                ].options["columnDefs"]
-                            ]:
-                                colname = (
-                                    column["field"]
-                                    if "headerName" not in column
-                                    else column["headerName"]
-                                )
-                                ui.switch(
-                                    colname,
-                                    value=True,
-                                    on_change=lambda e, variant=variant, column=column: (
-                                        GENERAL_STATE[
-                                            "result_table_" + variant
-                                        ].run_grid_method(
-                                            "setColumnsVisible",
-                                            [column["field"]],
-                                            e.value,
-                                        )
+                        .on(
+                            "rowSelected",
+                            lambda _, variant=variant: output_selected_row(variant),
+                        )
+                        .classes("w-full h-9/10")
+                    )
+                    # Allowing columns selection
+                    with col_select, ui.menu(), ui.column().classes("'gap-0 p-2'"):
+                        for column in [
+                            i
+                            for i in GENERAL_STATE["result_table_" + variant].options[
+                                "columnDefs"
+                            ]
+                        ]:
+                            colname = (
+                                column["field"]
+                                if "headerName" not in column
+                                else column["headerName"]
+                            )
+                            ui.switch(
+                                colname,
+                                value=True,
+                                on_change=lambda e, variant=variant, column=column: (
+                                    GENERAL_STATE[
+                                        "result_table_" + variant
+                                    ].run_grid_method(
+                                        "setColumnsVisible",
+                                        [column["field"]],
+                                        e.value,
+                                    )
+                                ),
+                            )
+                with ui.card().classes("w-23/100 h-100"):
+                    ui.label(f"Details on {variant}").classes("text-h5")
+                    with ui.tabs().classes("w-full") as tabs:
+                        ui.tab("info")
+                        ui.tab("freq")
+                        ui.tab("gnomad")
+                        ui.tab("csq")
+                    with ui.tab_panels(tabs, value="info").classes("w-full"):
+                        with ui.tab_panel("info"), ui.grid(columns=2):
+                            for detail in details_label_column:
+                                ui.label(detail)
+                                ui.label().bind_text_from(
+                                    GENERAL_STATE,
+                                    "details_variant_" + variant,
+                                    backward=lambda a, detail=detail: (
+                                        f"{a[details_label_column[detail]]}"
                                     ),
                                 )
-                    with ui.card().classes("w-23/100 h-100"):
-                        ui.label(f"Details on {variant}").classes("text-h5")
-                        with ui.tabs().classes("w-full") as tabs:
-                            ui.tab("info")
-                            ui.tab("freq")
-                            ui.tab("gnomad")
-                            ui.tab("csq")
-                        with ui.tab_panels(tabs, value="info").classes("w-full"):
-                            with ui.tab_panel("info"), ui.grid(columns=2):
-                                for detail in details_label_column:
-                                    ui.label(detail)
+                        with ui.tab_panel("freq"):
+                            GENERAL_STATE["details_table_" + variant] = ui.table(
+                                columns=[
+                                    {
+                                        "name": "pop_type",
+                                        "label": "",
+                                        "field": "pop",
+                                        "align": "center",
+                                    },
+                                    {
+                                        "name": "AC",
+                                        "label": "AC",
+                                        "field": "AC",
+                                        "align": "center",
+                                        "sortable": True,
+                                    },
+                                    {
+                                        "name": "AN",
+                                        "label": "AN",
+                                        "field": "AN",
+                                        "align": "center",
+                                        "sortable": True,
+                                    },
+                                    {
+                                        "name": "AF",
+                                        "label": "AF",
+                                        "field": "AF",
+                                        "align": "center",
+                                        "sortable": True,
+                                    },
+                                ],
+                                rows=[
+                                    {
+                                        "pop": "All",
+                                        "AC": "",
+                                        "AN": "",
+                                        "AF": "",
+                                    },
+                                    {
+                                        "pop": "XY",
+                                        "AC": "",
+                                        "AN": "",
+                                        "AF": "",
+                                    },
+                                    {
+                                        "pop": "XX",
+                                        "AC": "",
+                                        "AN": "",
+                                        "AF": "",
+                                    },
+                                    {
+                                        "pop": "grpmax",
+                                        "AC": "",
+                                        "AN": "",
+                                        "AF": "",
+                                    },
+                                ],
+                            ).classes("w-full")
+                            with ui.grid(columns=2):
+                                for freq in ["AC_Hom", "grpmax"]:
+                                    ui.label(freq)
                                     ui.label().bind_text_from(
                                         GENERAL_STATE,
                                         "details_variant_" + variant,
-                                        backward=lambda a, detail=detail: (
-                                            f"{a[details_label_column[detail]]}"
+                                        backward=lambda a, freq=freq: (
+                                            f"{a[frequencies_label_column[freq]]}"
                                         ),
                                     )
-                            with ui.tab_panel("freq"):
-                                GENERAL_STATE["details_table_" + variant] = ui.table(
-                                    columns=[
-                                        {
-                                            "name": "pop_type",
-                                            "label": "",
-                                            "field": "pop",
-                                            "align": "center",
-                                        },
-                                        {
-                                            "name": "AC",
-                                            "label": "AC",
-                                            "field": "AC",
-                                            "align": "center",
-                                            "sortable": True,
-                                        },
-                                        {
-                                            "name": "AN",
-                                            "label": "AN",
-                                            "field": "AN",
-                                            "align": "center",
-                                            "sortable": True,
-                                        },
-                                        {
-                                            "name": "AF",
-                                            "label": "AF",
-                                            "field": "AF",
-                                            "align": "center",
-                                            "sortable": True,
-                                        },
-                                    ],
-                                    rows=[
-                                        {
-                                            "pop": "All",
-                                            "AC": "",
-                                            "AN": "",
-                                            "AF": "",
-                                        },
-                                        {
-                                            "pop": "XY",
-                                            "AC": "",
-                                            "AN": "",
-                                            "AF": "",
-                                        },
-                                        {
-                                            "pop": "XX",
-                                            "AC": "",
-                                            "AN": "",
-                                            "AF": "",
-                                        },
-                                        {
-                                            "pop": "grpmax",
-                                            "AC": "",
-                                            "AN": "",
-                                            "AF": "",
-                                        },
-                                    ],
-                                ).classes("w-full")
-                                with ui.grid(columns=2):
-                                    for freq in ["AC_Hom", "grpmax"]:
-                                        ui.label(freq)
-                                        ui.label().bind_text_from(
-                                            GENERAL_STATE,
-                                            "details_variant_" + variant,
-                                            backward=lambda a, freq=freq: (
-                                                f"{a[frequencies_label_column[freq]]}"
-                                            ),
-                                        )
-                            with ui.tab_panel("gnomad"), ui.grid(columns=2):
-                                for detail in gnomAD_label_column:
-                                    ui.label(detail)
-                                    ui.label().bind_text_from(
-                                        GENERAL_STATE,
-                                        "details_variant_" + variant,
-                                        backward=lambda a, detail=detail: (
-                                            f"{a[gnomAD_label_column[detail]]}"
-                                        ),
-                                    )
-                            with ui.tab_panel("csq"):
-                                ui.select(
-                                    label="Select a feature",
-                                    options=["ENS0001", "ENS0002"],
-                                ).classes("w-full")
-                                with ui.row().classes("w-full"):
-                                    ui.button("Clear").props("color=red")
-                                    ui.space()
-                                    ui.button(
-                                        "Search",
-                                        on_click=lambda a: (
-                                            GENERAL_STATE["test"]
-                                            .classes("w-200")
-                                            .update(),
-                                            print("prout"),
-                                        ),
-                                    )
-        # for i in [
-        #     "Consequence",
-        #     "IMPACT",
-        #     "SYMBOL",
-        #     "Gene",
-        #     "Feature_type",
-        #     "Feature",
-        #     "BIOTYPE",
-        #     "EXON",
-        #     "INTRON",
-        #     "CDS_position",
-        #     "Protein_position",
-        #     "Amino_acids",
-        #     "Codons",
-        # ]:
-        #     ui.label(i)
+                        with ui.tab_panel("gnomad"), ui.grid(columns=2):
+                            for detail in gnomAD_label_column:
+                                ui.label(detail)
+                                ui.label().bind_text_from(
+                                    GENERAL_STATE,
+                                    "details_variant_" + variant,
+                                    backward=lambda a, detail=detail: (
+                                        f"{a[gnomAD_label_column[detail]]}"
+                                    ),
+                                )
+                        with ui.tab_panel("csq"):
+                            ui.select(
+                                label="Select a feature",
+                                options=["ENS0001", "ENS0002"],
+                            ).classes("w-full")
+                            with ui.row().classes("w-full"):
+                                ui.button("Clear").props("color=red")
+                                ui.space()
+                                ui.button("Search")
+    # for i in [
+    #     "Consequence",
+    #     "IMPACT",
+    #     "SYMBOL",
+    #     "Gene",
+    #     "Feature_type",
+    #     "Feature",
+    #     "BIOTYPE",
+    #     "EXON",
+    #     "INTRON",
+    #     "CDS_position",
+    #     "Protein_position",
+    #     "Amino_acids",
+    #     "Codons",
+    # ]:
+    #     ui.label(i)
 
     with ui.footer(fixed=False):
         ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
