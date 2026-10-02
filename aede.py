@@ -323,7 +323,7 @@ def search_page():
         # Variants result row
         with ui.row().classes("w-full").bind_visibility(GENERAL_STATE, variant):
             with (
-                ui.card().classes("w-75/100 h-100"),
+                ui.card().classes("w-75/100 h-105"),
             ):
                 with ui.row():
                     ui.label(variant).classes("text-h5")
@@ -383,7 +383,7 @@ def search_page():
                                 )
                             ),
                         )
-            with ui.card().classes("w-23/100 h-100"):
+            with ui.card().classes("w-23/100 h-105"):
                 ui.label(f"Details on {variant}").classes("text-h5")
                 with ui.tabs().classes("w-full") as tabs:
                     ui.tab("info")
@@ -433,30 +433,10 @@ def search_page():
                                 },
                             ],
                             rows=[
-                                {
-                                    "pop": "All",
-                                    "AC": "",
-                                    "AN": "",
-                                    "AF": "",
-                                },
-                                {
-                                    "pop": "XY",
-                                    "AC": "",
-                                    "AN": "",
-                                    "AF": "",
-                                },
-                                {
-                                    "pop": "XX",
-                                    "AC": "",
-                                    "AN": "",
-                                    "AF": "",
-                                },
-                                {
-                                    "pop": "grpmax",
-                                    "AC": "",
-                                    "AN": "",
-                                    "AF": "",
-                                },
+                                {"pop": "All", "AC": "", "AN": "", "AF": ""},
+                                {"pop": "XY", "AC": "", "AN": "", "AF": ""},
+                                {"pop": "XX", "AC": "", "AN": "", "AF": ""},
+                                {"pop": "grpmax", "AC": "", "AN": "", "AF": ""},
                             ],
                         ).classes("w-full")
                         with ui.grid(columns=2):
@@ -506,9 +486,9 @@ def search_page():
         #     ui.label(i)
         # Variants result row
         with ui.row().classes("w-full").bind_visibility(GENERAL_STATE, variant):
-            with ui.card().classes("w-23/100 h-100"):
+            with ui.card().classes("w-23/100 h-105"):
                 ui.label("test")
-            with ui.card().classes("w-75/100 h-100"):
+            with ui.card().classes("w-75/100 h-105"):
                 ui.label("test 2")
 
     with ui.footer(fixed=False):
