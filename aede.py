@@ -154,7 +154,6 @@ details_label_column = {
     "Alternative": "alt",
     "Filter": "filter",
     "DP": "DP",
-    "CSQ": "first_csq_symbol",
 }
 
 frequencies_label_column = {
@@ -348,11 +347,6 @@ def search_page():
                                     },
                                     {"field": "inGnomad"},
                                     {"field": "passGnomad"},
-                                    {
-                                        "headerName": "CSQ",
-                                        "field": "first_csq_symbol",
-                                        "filter": "agTextColumnFilter",
-                                    },
                                 ],
                                 "rowData": [],
                                 "rowSelection": {"mode": "singleRow"},
