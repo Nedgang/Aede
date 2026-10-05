@@ -321,6 +321,65 @@ def search_page():
                     ui.notify("Request sent to the API"),
                 ),
             )
+    # WIDGETS INTERACTIONS
+    # Switchs interactions with one another
+    gnomad_region_switch.on(
+        "click",
+        lambda: (
+            in_gnomad_switch.set_value(False),
+            pass_gnomad_switch.set_value(False)
+            if not gnomad_region_switch.value
+            else None,
+        ),
+    )
+    in_gnomad_switch.on(
+        "click",
+        lambda: (
+            pass_gnomad_switch.set_value(False)
+            if not in_gnomad_switch.value
+            else gnomad_region_switch.set_value(True)
+        ),
+    )
+    pass_gnomad_switch.on(
+        "click",
+        lambda: (
+            in_gnomad_switch.set_value(True),
+            gnomad_region_switch.set_value(True) if pass_gnomad_switch.value else None,
+        ),
+    )
+    select_gene.on_value_change(
+        lambda c, select_chr=select_chr: (
+            select_chr.set_value(gene_to_chrom[c.value])
+            if c.value is not None
+            else None,
+            select_chr.disable() if c.value is not None else select_chr.enable(),
+        ),
+    )
+    # Start can't be higher than Stop
+    start_value.on(
+        "change",
+        lambda: (
+            None
+            if stop_value.value is None or start_value.value is None
+            else (
+                stop_value.set_value(start_value.value)
+                if stop_value.value < start_value.value
+                else None
+            )
+        ),
+    )
+    stop_value.on(
+        "change",
+        lambda: (
+            None
+            if stop_value.value is None or start_value.value is None
+            else (
+                start_value.set_value(stop_value.value)
+                if stop_value.value < start_value.value
+                else None
+            )
+        ),
+    )
 
     for variant in variants_type:
         # Variants result row
@@ -549,66 +608,6 @@ def search_page():
 
     with ui.footer(fixed=False):
         ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
-
-    # WIDGETS INTERACTIONS
-    # Switchs interactions with one another
-    gnomad_region_switch.on(
-        "click",
-        lambda: (
-            in_gnomad_switch.set_value(False),
-            pass_gnomad_switch.set_value(False)
-            if not gnomad_region_switch.value
-            else None,
-        ),
-    )
-    in_gnomad_switch.on(
-        "click",
-        lambda: (
-            pass_gnomad_switch.set_value(False)
-            if not in_gnomad_switch.value
-            else gnomad_region_switch.set_value(True)
-        ),
-    )
-    pass_gnomad_switch.on(
-        "click",
-        lambda: (
-            in_gnomad_switch.set_value(True),
-            gnomad_region_switch.set_value(True) if pass_gnomad_switch.value else None,
-        ),
-    )
-    select_gene.on_value_change(
-        lambda c, select_chr=select_chr: (
-            select_chr.set_value(gene_to_chrom[c.value])
-            if c.value is not None
-            else None,
-            select_chr.disable() if c.value is not None else select_chr.enable(),
-        ),
-    )
-    # Start can't be higher than Stop
-    start_value.on(
-        "change",
-        lambda: (
-            None
-            if stop_value.value is None or start_value.value is None
-            else (
-                stop_value.set_value(start_value.value)
-                if stop_value.value < start_value.value
-                else None
-            )
-        ),
-    )
-    stop_value.on(
-        "change",
-        lambda: (
-            None
-            if stop_value.value is None or start_value.value is None
-            else (
-                start_value.set_value(stop_value.value)
-                if stop_value.value < start_value.value
-                else None
-            )
-        ),
-    )
 
 
 if __name__ in {"__main__", "__mp_main__"}:
