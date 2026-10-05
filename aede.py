@@ -16,7 +16,7 @@ def run_variant_search() -> None:
     Send the get request to the API, handle the answer and return a dict with results
     from database search.
     """
-    ans = requests.get("http://localhost:8000/query", params=REQUEST)
+    ans = requests.get("http://localhost:8000/query/v1/variants/", params=REQUEST)
     if ans.ok:
         for variant in ans.json()[0]:
             GENERAL_STATE["result_table_" + variant].options["rowData"].clear()
@@ -28,9 +28,16 @@ def run_variant_search() -> None:
         ui.notify(ans.json()["detail"], type="negative")
 
 
-def run_csq_search() -> None:
-    """"""
-    pass
+def run_csq_search(request) -> None:
+    """ """
+    ans = requests.get("http://localhost:8000/query/v1/csq", params=request)
+    if ans.ok:
+        GENERAL_STATE[f"csq_table_{request['variant_type']}"].options["rowData"].clear()
+        GENERAL_STATE[f"csq_table_{request['variant_type']}"].options["rowData"].extend(
+            ans.json()
+        )
+    else:
+        ui.notify(ans.json()["detail"], type="negative")
 
 
 def reset_request() -> dict:
@@ -444,7 +451,7 @@ def search_page():
                     with col_select, ui.menu(), ui.column().classes("'gap-0 p-2'"):
                         for column in [
                             i
-                            for i in GENERAL_STATE["result_table_" + variant].options[
+                            for i in GENERAL_STATE[f"result_table_{variant}"].options[
                                 "columnDefs"
                             ]
                         ]:
@@ -458,7 +465,7 @@ def search_page():
                                 value=True,
                                 on_change=lambda e, variant=variant, column=column: (
                                     GENERAL_STATE[
-                                        "result_table_" + variant
+                                        f"result_table_{variant}"
                                     ].run_grid_method(
                                         "setColumnsVisible",
                                         [column["field"]],
@@ -482,13 +489,13 @@ def search_page():
                                 ui.label(detail)
                                 ui.label().bind_text_from(
                                     GENERAL_STATE,
-                                    "details_variant_" + variant,
+                                    f"details_variant_{variant}",
                                     backward=lambda a, detail=detail: (
                                         f"{a[details_label_column[detail]]}"
                                     ),
                                 )
                         with ui.tab_panel("freq"):
-                            GENERAL_STATE["details_table_" + variant] = ui.table(
+                            GENERAL_STATE[f"details_table_{variant}"] = ui.table(
                                 columns=[
                                     {
                                         "name": "pop_type",
@@ -530,7 +537,7 @@ def search_page():
                                     ui.label(freq)
                                     ui.label().bind_text_from(
                                         GENERAL_STATE,
-                                        "details_variant_" + variant,
+                                        f"details_variant_{variant}",
                                         backward=lambda a, freq=freq: (
                                             f"{a[frequencies_label_column[freq]]}"
                                         ),
@@ -540,7 +547,7 @@ def search_page():
                                 ui.label(detail)
                                 ui.label().bind_text_from(
                                     GENERAL_STATE,
-                                    "details_variant_" + variant,
+                                    f"details_variant_{variant}",
                                     backward=lambda a, detail=detail: (
                                         f"{a[gnomAD_label_column[detail]]}"
                                     ),
@@ -564,11 +571,28 @@ def search_page():
                         options=test_feature.split(","),
                         multiple=True,
                         clearable=True,
+                    ).bind_value_to(
+                        GENERAL_STATE, f"selected_{variant}_features"
                     ).classes("w-full")
                     with ui.row().classes("w-full"):
-                        ui.button("Clear").props("color=red")
-                        ui.space()
-                        ui.button("Search")
+                        ui.button("Search").bind_enabled_from(
+                            GENERAL_STATE, f"selected_{variant}_variant"
+                        ).on_click(
+                            lambda variant=variant: run_csq_search(
+                                {
+                                    "variant_type": variant,
+                                    "chr": GENERAL_STATE[f"details_variant_{variant}"][
+                                        "chrom"
+                                    ],
+                                    "variant_key": GENERAL_STATE[
+                                        f"details_variant_{variant}"
+                                    ]["variant_key"],
+                                    "features": GENERAL_STATE[
+                                        f"selected_{variant}_features"
+                                    ],
+                                }
+                            )
+                        )
                 with ui.card().classes("w-75/100 h-105"):
                     with ui.row():
                         ui.label(f"CSQ on {variant}").classes("text-h5")
@@ -576,18 +600,30 @@ def search_page():
                     GENERAL_STATE["csq_table_" + variant] = ui.aggrid(
                         {
                             "columnDefs": [
-                                {"field": "Consequence"},
-                                {"field": "impact"},
-                                {"field": "symbol"},
-                                {"field": "gene"},
-                                {"field": "feature_type"},
-                                {"field": "feature"},
-                                {"field": "biotype"},
-                                {"field": "exon"},
-                                {"field": "intron"},
-                                {"field": "cds_position"},
-                                {"field": "amino_acids"},
-                                {"field": "codon"},
+                                {
+                                    "field": "Consequence",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {"field": "IMPACT", "filter": "agTextColumnFilter"},
+                                {"field": "SYMBOL", "filter": "agTextColumnFilter"},
+                                {"field": "Gene", "filter": "agTextColumnFilter"},
+                                {
+                                    "field": "Feature_type",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {"field": "Feature", "filter": "agTextColumnFilter"},
+                                {"field": "BIOTYPE", "filter": "agTextColumnFilter"},
+                                {"field": "EXON", "filter": "agTextColumnFilter"},
+                                {"field": "INTRON", "filter": "agTextColumnFilter"},
+                                {
+                                    "field": "CDS_position",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "field": "Amino_acids",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {"field": "Codons", "filter": "agTextColumnFilter"},
                             ],
                             "rowData": [],
                             "rowSelection": {"mode": "None"},
