@@ -11,7 +11,7 @@ from nicegui import ui
 #############
 # FUNCTIONS #
 #############
-def run_search() -> None:
+def run_variant_search() -> None:
     """
     Send the get request to the API, handle the answer and return a dict with results
     from database search.
@@ -317,7 +317,7 @@ def search_page():
             ui.button(
                 "Search",
                 on_click=lambda left_drawer=left_drawer: (
-                    run_search(),
+                    run_variant_search(),
                     ui.notify("Request sent to the API"),
                 ),
             )
@@ -395,9 +395,9 @@ def search_page():
                                 ),
                             )
                 with ui.card().classes("w-23/100 h-105"):
-                    with ui.row():
+                    with ui.row().classes("w-full"):
                         ui.label(f"Details on {variant}").classes("text-h5")
-                        ui.switch("CSQ panel").bind_value_to(
+                        ui.switch("CSQ").bind_value_to(
                             GENERAL_STATE, f"display_{variant}_csq"
                         )
                     with ui.tabs().classes("w-full") as tabs:
@@ -483,7 +483,7 @@ def search_page():
                     ui.label(f"Feature affected from {variant} variant").classes(
                         "text-h5"
                     )
-                    ui.switch("Variants panel", value=True).bind_value(
+                    ui.switch("Display variants panel", value=True).bind_value(
                         GENERAL_STATE, f"display_{variant}_variants"
                     )
                     ui.select(
