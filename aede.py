@@ -222,8 +222,28 @@ def search_page():
                 "Must select at least one variant type" if b == [] else None
             ),
         ).bind_value(REQUEST, "variant_type").classes("w-full")
+        # Gene search
+        select_gene = (
+            ui.select(
+                label="Gene",
+                options=list(gene_to_chrom.keys()),
+                with_input=True,
+                clearable=True,
+            )
+            .bind_value(REQUEST, "gene")
+            .classes("w-full")
+        )
         # ID search
         ui.input(label="Variant ID").bind_value(REQUEST, "id").classes("w-full")
+        # Feature
+        with open("../Mneme/feature.txt", "r") as file:
+            ui.select(
+                label="Feature ID",
+                options=[feature for feature in file],
+                with_input=True,
+                multiple=True,
+                clearable=True,
+            ).bind_value(REQUEST, "feature").classes("w-full")
         # Variant impact
         with open("../Mneme/impact.txt", "r") as file:
             ui.select(
@@ -242,26 +262,6 @@ def search_page():
                 multiple=True,
                 clearable=True,
             ).bind_value(REQUEST, "csq").classes("w-full")
-        # Feature
-        with open("../Mneme/feature.txt", "r") as file:
-            ui.select(
-                label="Feature ID",
-                options=[feature for feature in file],
-                with_input=True,
-                multiple=True,
-                clearable=True,
-            ).bind_value(REQUEST, "feature").classes("w-full")
-        # Gene search
-        select_gene = (
-            ui.select(
-                label="Gene",
-                options=list(gene_to_chrom.keys()),
-                with_input=True,
-                clearable=True,
-            )
-            .bind_value(REQUEST, "gene")
-            .classes("w-full")
-        )
         # Chromosome choice
         select_chr = (
             ui.select(
