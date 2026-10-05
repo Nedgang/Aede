@@ -185,6 +185,7 @@ gnomAD_label_column = {
 GENERAL_STATE = {bdd: bdd in REQUEST["variant_type"] for bdd in variants_type}
 for bdd in variants_type:
     GENERAL_STATE.setdefault("result_table_" + bdd, None)
+    GENERAL_STATE.setdefault("csq_table_" + bdd, None)
     GENERAL_STATE.setdefault(
         "details_variant_" + bdd,
         {
@@ -494,8 +495,10 @@ def search_page():
                         ui.space()
                         ui.button("Search")
                 with ui.card().classes("w-75/100 h-105"):
-                    ui.label(f"CSQ on {variant}").classes("text-h5")
-                    ui.aggrid(
+                    with ui.row():
+                        ui.label(f"CSQ on {variant}").classes("text-h5")
+                        col_select = ui.button(icon="menu")
+                    GENERAL_STATE["csq_table_" + variant] = ui.aggrid(
                         {
                             "columnDefs": [
                                 {"field": "Consequence"},
@@ -517,6 +520,32 @@ def search_page():
                         theme="balham",
                         auto_size_columns=True,
                     ).classes("w-full h-9/10")
+                    # Allowing columns selection
+                    with col_select, ui.menu(), ui.column().classes("'gap-0 p-2'"):
+                        for column in [
+                            i
+                            for i in GENERAL_STATE["csq_table_" + variant].options[
+                                "columnDefs"
+                            ]
+                        ]:
+                            colname = (
+                                column["field"]
+                                if "headerName" not in column
+                                else column["headerName"]
+                            )
+                            ui.switch(
+                                colname,
+                                value=True,
+                                on_change=lambda e, variant=variant, column=column: (
+                                    GENERAL_STATE[
+                                        "csq_table_" + variant
+                                    ].run_grid_method(
+                                        "setColumnsVisible",
+                                        [column["field"]],
+                                        e.value,
+                                    )
+                                ),
+                            )
 
     with ui.footer(fixed=False):
         ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
