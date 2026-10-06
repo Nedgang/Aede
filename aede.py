@@ -229,9 +229,7 @@ def search_page():
     with ui.header(elevated=True).classes():
         ui.image("logo/RF-Inserm_Simplifie_rvb_Blanc.png").classes("w-64")
         ui.label("onlinePOPGEN").classes("text-h3")
-        request_button = ui.button(
-            icon="wysiwyg", on_click=lambda: left_drawer.toggle()
-        )
+        ui.button(icon="wysiwyg", on_click=lambda: left_drawer.toggle())
         ui.switch("Dark mode").bind_value(ui.dark_mode())
 
     with left_drawer, ui.column().classes("w-full"):
