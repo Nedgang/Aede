@@ -226,7 +226,8 @@ for variant_type in all_variants_type:
 def search_page():
     # PAGE & WIDGETS DESCRIPTION
     left_drawer = ui.left_drawer(bordered=True, elevated=True)
-    with ui.header().classes("align-items: center"):
+    with ui.header().classes():
+        ui.image("logo/RF-Inserm_Simplifie_rvb_Blanc.png").classes("w-64")
         ui.label("onlinePOPGEN").classes("text-h3")
         request_button = ui.button(
             icon="wysiwyg", on_click=lambda: left_drawer.toggle()
