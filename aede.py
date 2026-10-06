@@ -226,7 +226,7 @@ for variant_type in all_variants_type:
 def search_page():
     # PAGE & WIDGETS DESCRIPTION
     left_drawer = ui.left_drawer(bordered=True, elevated=True)
-    with ui.header().classes():
+    with ui.header(elevated=True).classes():
         ui.image("logo/RF-Inserm_Simplifie_rvb_Blanc.png").classes("w-64")
         ui.label("onlinePOPGEN").classes("text-h3")
         request_button = ui.button(
@@ -661,7 +661,7 @@ def search_page():
                                 ),
                             )
 
-    with ui.footer(fixed=False):
+    with ui.footer(elevated=True, fixed=False):
         ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
 
 
