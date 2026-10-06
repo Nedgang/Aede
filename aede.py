@@ -226,12 +226,14 @@ for variant_type in all_variants_type:
 def search_page():
     # PAGE & WIDGETS DESCRIPTION
     left_drawer = ui.left_drawer(bordered=True, elevated=True)
-    with ui.header().classes("items-center justify-between"):
+    with ui.header().classes("align-items: center"):
         ui.label("onlinePOPGEN").classes("text-h3")
-        # ui.button("Search")
+        request_button = ui.button(
+            icon="wysiwyg", on_click=lambda: left_drawer.toggle()
+        )
         ui.switch("Dark mode").bind_value(ui.dark_mode())
 
-    with left_drawer, ui.card().classes("w-full"):
+    with left_drawer, ui.column().classes("w-full"):
         ui.label("Request").classes("text-h5")
         # Variant type selection
         ui.select(
