@@ -162,13 +162,6 @@ chromosomes = sorted(
     key=lambda c: c.split("chr")[-1],
 )
 
-with open("../Mneme/genes.tsv") as file:
-    gene_to_chrom = {
-        line.strip().split("\t")[0]: line.strip().split("\t")[1]
-        for line in file
-        if line.strip().split("\t")[0] != "SYMBOL"
-    }
-
 link_gene_chrom = pl.scan_parquet("../Mneme/gene_index.parquet")
 
 REQUEST = reset_request()
