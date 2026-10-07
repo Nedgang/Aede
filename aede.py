@@ -30,7 +30,10 @@ def run_variant_search() -> None:
 
 
 def run_csq_search(request) -> None:
-    """ """
+    """
+    Send request for CSQ information based on chr, variant_type, variant_key and feature
+    to database and update the aggrid.
+    """
     ans = requests.get("http://localhost:8000/query/v1/csq", params=request)
     if ans.ok:
         GENERAL_STATE[f"csq_table_{request['variant_type']}"].options["rowData"].clear()
@@ -63,6 +66,9 @@ def reset_request() -> dict:
 
 
 async def output_selected_row(variant_type):
+    """
+    Update details in display depending on the selected variant in result table.
+    """
     row = await GENERAL_STATE[f"result_table_{variant_type}"].get_selected_row()
     if row:
         GENERAL_STATE[f"selected_{variant_type}_variant"] = True
