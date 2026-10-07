@@ -64,7 +64,6 @@ def reset_request() -> dict:
 async def output_selected_row(variant_type):
     row = await GENERAL_STATE[f"result_table_{variant_type}"].get_selected_row()
     if row:
-        print(row)
         GENERAL_STATE[f"selected_{variant_type}_variant"] = True
         GENERAL_STATE[f"details_variant_{variant_type}"] = row
         GENERAL_STATE[f"details_table_{variant_type}"].update_rows(
