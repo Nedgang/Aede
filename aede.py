@@ -407,21 +407,21 @@ def search_page():
         ),
     )
 
-    for variant in all_variants_type:
+    for variant_type in all_variants_type:
         # Variants result row
-        with ui.row().classes("w-full").bind_visibility(GENERAL_STATE, variant):
+        with ui.row().classes("w-full").bind_visibility(GENERAL_STATE, variant_type):
             with (
                 ui.row()
                 .classes("w-full")
-                .bind_visibility(GENERAL_STATE, f"display_{variant}_variants")
+                .bind_visibility(GENERAL_STATE, f"display_{variant_type}_variants")
             ):
                 with (
                     ui.card().classes("w-75/100 h-105"),
                 ):
                     with ui.row():
-                        ui.label(variant).classes("text-h5")
+                        ui.label(variant_type).classes("text-h5")
                         col_select = ui.button(icon="menu")
-                    GENERAL_STATE["result_table_" + variant] = (
+                    GENERAL_STATE[f"result_table_{variant_type}"] = (
                         ui.aggrid(
                             {
                                 "columnDefs": [
@@ -449,7 +449,9 @@ def search_page():
                         )
                         .on(
                             "rowSelected",
-                            lambda _, variant=variant: output_selected_row(variant),
+                            lambda _, variant_type=variant_type: output_selected_row(
+                                variant_type
+                            ),
                         )
                         .classes("w-full h-9/10")
                     )
@@ -457,9 +459,9 @@ def search_page():
                     with col_select, ui.menu(), ui.column().classes("'gap-0 p-2'"):
                         for column in [
                             i
-                            for i in GENERAL_STATE[f"result_table_{variant}"].options[
-                                "columnDefs"
-                            ]
+                            for i in GENERAL_STATE[
+                                f"result_table_{variant_type}"
+                            ].options["columnDefs"]
                         ]:
                             colname = (
                                 column["field"]
@@ -469,9 +471,9 @@ def search_page():
                             ui.switch(
                                 colname,
                                 value=True,
-                                on_change=lambda e, variant=variant, column=column: (
+                                on_change=lambda e, variant_type=variant_type, column=column: (
                                     GENERAL_STATE[
-                                        f"result_table_{variant}"
+                                        f"result_table_{variant_type}"
                                     ].run_grid_method(
                                         "setColumnsVisible",
                                         [column["field"]],
@@ -481,9 +483,9 @@ def search_page():
                             )
                 with ui.card().classes("w-23/100 h-105"):
                     with ui.row().classes("w-full"):
-                        ui.label(f"Details on {variant}").classes("text-h5")
+                        ui.label(f"Details on {variant_type}").classes("text-h5")
                         ui.switch("CSQ").bind_value_to(
-                            GENERAL_STATE, f"display_{variant}_csq"
+                            GENERAL_STATE, f"display_{variant_type}_csq"
                         )
                     with ui.tabs().classes("w-full") as tabs:
                         ui.tab("info")
@@ -495,13 +497,13 @@ def search_page():
                                 ui.label(detail)
                                 ui.label().bind_text_from(
                                     GENERAL_STATE,
-                                    f"details_variant_{variant}",
+                                    f"details_variant_{variant_type}",
                                     backward=lambda a, detail=detail: (
                                         f"{a[details_label_column[detail]]}"
                                     ),
                                 )
                         with ui.tab_panel("freq"):
-                            GENERAL_STATE[f"details_table_{variant}"] = ui.table(
+                            GENERAL_STATE[f"details_table_{variant_type}"] = ui.table(
                                 columns=[
                                     {
                                         "name": "pop_type",
@@ -543,7 +545,7 @@ def search_page():
                                     ui.label(freq)
                                     ui.label().bind_text_from(
                                         GENERAL_STATE,
-                                        f"details_variant_{variant}",
+                                        f"details_variant_{variant_type}",
                                         backward=lambda a, freq=freq: (
                                             f"{a[frequencies_label_column[freq]]}"
                                         ),
@@ -553,7 +555,7 @@ def search_page():
                                 ui.label(detail)
                                 ui.label().bind_text_from(
                                     GENERAL_STATE,
-                                    f"details_variant_{variant}",
+                                    f"details_variant_{variant_type}",
                                     backward=lambda a, detail=detail: (
                                         f"{a[gnomAD_label_column[detail]]}"
                                     ),
@@ -562,49 +564,51 @@ def search_page():
             with (
                 ui.row()
                 .classes("w-full")
-                .bind_visibility_from(GENERAL_STATE, f"display_{variant}_csq")
+                .bind_visibility_from(GENERAL_STATE, f"display_{variant_type}_csq")
             ):
                 with ui.card().classes("w-23/100 h-105"):
-                    ui.label(f"Feature affected from {variant} variant").classes(
+                    ui.label(f"Feature affected from {variant_type} variant").classes(
                         "text-h5"
                     )
                     ui.switch("Display variants panel", value=True).bind_value(
-                        GENERAL_STATE, f"display_{variant}_variants"
+                        GENERAL_STATE, f"display_{variant_type}_variants"
                     )
-                    GENERAL_STATE[f"select_{variant}_features"] = (
+                    GENERAL_STATE[f"select_{variant_type}_features"] = (
                         ui.select(
                             label="Select a feature",
                             options=[],
                             multiple=True,
                             clearable=True,
                         )
-                        .bind_value_to(GENERAL_STATE, f"selected_{variant}_features")
+                        .bind_value_to(
+                            GENERAL_STATE, f"selected_{variant_type}_features"
+                        )
                         .classes("w-full")
                     )
                     with ui.row().classes("w-full"):
                         ui.button("Search").bind_enabled_from(
-                            GENERAL_STATE, f"selected_{variant}_variant"
+                            GENERAL_STATE, f"selected_{variant_type}_variant"
                         ).on_click(
-                            lambda variant=variant: run_csq_search(
+                            lambda variant_type=variant_type: run_csq_search(
                                 {
-                                    "variant_type": variant,
-                                    "chr": GENERAL_STATE[f"details_variant_{variant}"][
-                                        "chrom"
-                                    ],
+                                    "variant_type": variant_type,
+                                    "chr": GENERAL_STATE[
+                                        f"details_variant_{variant_type}"
+                                    ]["chrom"],
                                     "variant_key": GENERAL_STATE[
-                                        f"details_variant_{variant}"
+                                        f"details_variant_{variant_type}"
                                     ]["variant_key"],
                                     "features": GENERAL_STATE[
-                                        f"selected_{variant}_features"
+                                        f"selected_{variant_type}_features"
                                     ],
                                 }
                             )
                         )
                 with ui.card().classes("w-75/100 h-105"):
                     with ui.row():
-                        ui.label(f"CSQ on {variant}").classes("text-h5")
+                        ui.label(f"CSQ on {variant_type}").classes("text-h5")
                         col_select = ui.button(icon="menu")
-                    GENERAL_STATE["csq_table_" + variant] = ui.aggrid(
+                    GENERAL_STATE[f"csq_table_{variant_type}"] = ui.aggrid(
                         {
                             "columnDefs": [
                                 {
@@ -642,7 +646,7 @@ def search_page():
                     with col_select, ui.menu(), ui.column().classes("'gap-0 p-2'"):
                         for column in [
                             i
-                            for i in GENERAL_STATE["csq_table_" + variant].options[
+                            for i in GENERAL_STATE[f"csq_table_{variant_type}"].options[
                                 "columnDefs"
                             ]
                         ]:
@@ -654,9 +658,9 @@ def search_page():
                             ui.switch(
                                 colname,
                                 value=True,
-                                on_change=lambda e, variant=variant, column=column: (
+                                on_change=lambda e, variant_type=variant_type, column=column: (
                                     GENERAL_STATE[
-                                        "csq_table_" + variant
+                                        f"csq_table_{variant_type}"
                                     ].run_grid_method(
                                         "setColumnsVisible",
                                         [column["field"]],
