@@ -134,6 +134,7 @@ async def output_selected_row(variant_type):
             ]
         )
         GENERAL_STATE[f"select_{variant_type}_features"].set_options([])
+        GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].clear()
 
 
 ####################
