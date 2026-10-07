@@ -95,7 +95,7 @@ async def output_selected_row(variant_type):
             ]
         )
         GENERAL_STATE[f"select_{variant_type}_features"].set_options(
-            row["Feature"].split(",")
+            row["Feature"].split(",") if row["Feature"] is not None else []
         )
     else:
         GENERAL_STATE[f"selected_{variant_type}_variant"] = False
