@@ -173,6 +173,9 @@ chromosomes = sorted(
 )
 
 link_gene_chrom = pl.scan_parquet("../Mneme/gene_index.parquet")
+link_feature_chrom = pl.scan_parquet("../Mneme/feature_index.parquet")
+link_id_chrom = pl.scan_parquet("../Mneme/id_index.parquet").select(["id", "chrom"])
+print(link_id_chrom.collect_schema())
 
 REQUEST = reset_request()
 
@@ -276,14 +279,18 @@ def search_page():
         # ID search
         ui.input(label="Variant ID").bind_value(REQUEST, "id").classes("w-full")
         # Feature
-        with open("../Mneme/feature.txt", "r") as file:
-            ui.select(
-                label="Feature ID",
-                options=[feature for feature in file],
-                with_input=True,
-                multiple=True,
-                clearable=True,
-            ).bind_value(REQUEST, "feature").classes("w-full")
+        ui.select(
+            label="Feature ID",
+            options=link_feature_chrom.select("Feature")
+            .collect()
+            .to_series()
+            .unique()
+            .sort()
+            .to_list(),
+            with_input=True,
+            multiple=True,
+            clearable=True,
+        ).bind_value(REQUEST, "feature").classes("w-full")
         # Variant impact
         with open("../Mneme/Impact.txt", "r") as file:
             ui.select(
