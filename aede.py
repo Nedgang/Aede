@@ -172,7 +172,6 @@ chromosomes = sorted(
     key=lambda c: c.split("chr")[-1],
 )
 
-link_gene_chrom = pl.scan_parquet("../Mneme/gene_index.parquet")
 link_feature_chrom = pl.scan_parquet("../Mneme/feature_index.parquet")
 link_id_chrom = pl.scan_parquet("../Mneme/id_index.parquet").select(["id", "chrom"])
 
@@ -264,7 +263,7 @@ def search_page():
         select_gene = (
             ui.select(
                 label="Gene",
-                options=link_gene_chrom.select("SYMBOL")
+                options=link_feature_chrom.select("SYMBOL")
                 .collect()
                 .to_series()
                 .unique()
