@@ -1,4 +1,4 @@
 install:
-	pip install requests nicegui
+	pip install requests nicegui polars
 run:
 	python aede.py
