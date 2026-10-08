@@ -150,7 +150,11 @@ async def output_selected_row(variant_type):
 # Finding options from data structure, which lead to automatic update of the front with
 # data upload
 all_variants_type = sorted(
-    [dir.name for dir in os.scandir("../Mneme/") if dir.is_dir()]
+    [
+        dir.name
+        for dir in os.scandir("../Mneme/")
+        if dir.is_dir() and "_index.parquet" not in dir.name
+    ]
 )
 chromosomes = sorted(
     {
