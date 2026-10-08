@@ -175,7 +175,6 @@ chromosomes = sorted(
 link_gene_chrom = pl.scan_parquet("../Mneme/gene_index.parquet")
 link_feature_chrom = pl.scan_parquet("../Mneme/feature_index.parquet")
 link_id_chrom = pl.scan_parquet("../Mneme/id_index.parquet").select(["id", "chrom"])
-print(link_id_chrom.collect_schema())
 
 REQUEST = reset_request()
 
@@ -231,6 +230,7 @@ for variant_type in all_variants_type:
     GENERAL_STATE.setdefault(f"display_{variant_type}_csq", False)
     GENERAL_STATE.setdefault(f"display_{variant_type}_variants", True)
     GENERAL_STATE.setdefault(f"selected_{variant_type}_variant", False)
+GENERAL_STATE.setdefault("chromosomes_option", chromosomes)
 
 
 ########
@@ -277,7 +277,28 @@ def search_page():
             .classes("w-full")
         )
         # ID search
-        ui.input(label="Variant ID").bind_value(REQUEST, "id").classes("w-full")
+        variant_id = (
+            ui.input(
+                label="Variant ID",
+                validation={
+                    "Not in DB": lambda v: (
+                        len(
+                            link_id_chrom.filter(
+                                pl.col("chrom").is_in(
+                                    GENERAL_STATE["chromosomes_option"]
+                                )
+                            )
+                            .filter(pl.col("id") == v)
+                            .collect()
+                        )
+                        > 0
+                        or v == ""
+                    )
+                },
+            )
+            .bind_value(REQUEST, "id")
+            .classes("w-full")
+        )
         # Feature
         ui.select(
             label="Feature ID",
@@ -389,6 +410,27 @@ def search_page():
         lambda: (
             in_gnomad_switch.set_value(True),
             gnomad_region_switch.set_value(True) if pass_gnomad_switch.value else None,
+        ),
+    )
+    # Check if variant id exist, and alter chromosome choice if winning
+    variant_id.on(
+        "blur",
+        lambda v=variant_id: (
+            (
+                select_chr.set_value(
+                    link_id_chrom.filter(pl.col("id") == v.value).collect()["chrom"][0]
+                )
+                if v.value != ""
+                else None
+            )
+            if not v.error
+            else (
+                ui.notify(
+                    f"{v.value} not in POPGEN database for the request available chromosomes.",
+                    type="warning",
+                ),
+                variant_id.set_value(""),
+            )
         ),
     )
     # select_gene.on_value_change(
