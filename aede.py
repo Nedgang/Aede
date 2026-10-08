@@ -171,7 +171,6 @@ chromosomes = sorted(
     },
     key=lambda c: c.split("chr")[-1],
 )
-
 link_feature_chrom = pl.scan_parquet("../Mneme/feature_index.parquet")
 link_id_chrom = pl.scan_parquet("../Mneme/id_index.parquet").select(["id", "chrom"])
 
