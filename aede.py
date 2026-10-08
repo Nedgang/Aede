@@ -281,7 +281,7 @@ def search_page():
                 clearable=True,
             ).bind_value(REQUEST, "feature").classes("w-full")
         # Variant impact
-        with open("../Mneme/impact.txt", "r") as file:
+        with open("../Mneme/Impact.txt", "r") as file:
             ui.select(
                 label="Variant impact",
                 options=[impact for impact in file],
