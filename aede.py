@@ -144,6 +144,11 @@ async def output_selected_row(variant_type):
         GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].clear()
 
 
+def harmonize_chrom_options() -> None:
+    if REQUEST["id"] == "" and REQUEST["feature"] == [] and REQUEST["gene"] is None:
+        GENERAL_STATE["chromosomes_option"] = chromosomes
+
+
 ####################
 # GLOBAL VARIABLES #
 ####################
@@ -298,18 +303,25 @@ def search_page():
             .classes("w-full")
         )
         # Feature
-        ui.select(
-            label="Feature ID",
-            options=link_feature_chrom.select("Feature")
-            .collect()
-            .to_series()
-            .unique()
-            .sort()
-            .to_list(),
-            with_input=True,
-            multiple=True,
-            clearable=True,
-        ).bind_value(REQUEST, "feature").classes("w-full")
+        select_features = (
+            ui.select(
+                label="Feature ID",
+                options=link_feature_chrom.select("Feature")
+                .collect()
+                .to_series()
+                .unique()
+                .sort()
+                .to_list(),
+                with_input=True,
+                multiple=True,
+                clearable=True,
+            )
+            .bind_value(REQUEST, "feature")
+            .classes("w-full")
+        )
+        # select_features.on_value_change(
+        #     lambda s=select_features: s.set_options(s.value + ["test"])
+        # )
         # Variant impact
         with open("../Mneme/Impact.txt", "r") as file:
             ui.select(
@@ -368,7 +380,7 @@ def search_page():
             "Variant pass in gnomAD",
             value=REQUEST["pass_gnomad"],
         ).bind_value(REQUEST, "pass_gnomad")
-        # request = ui.textarea(label="Requête").bind_value_from(request, "chr")
+
         ui.separator()
         with ui.row().classes("w-full"):
             ui.button(
@@ -415,11 +427,29 @@ def search_page():
         "blur",
         lambda v=variant_id: (
             (
-                select_chr.set_value(
-                    link_id_chrom.filter(pl.col("id") == v.value).collect()["chrom"][0]
+                (
+                    select_chr.set_value(
+                        link_id_chrom.filter(pl.col("id") == v.value).collect()[
+                            "chrom"
+                        ][0]
+                    ),
+                    GENERAL_STATE.update(
+                        {
+                            "chromosomes_option": [
+                                link_id_chrom.filter(pl.col("id") == v.value).collect()[
+                                    "chrom"
+                                ][0]
+                            ]
+                        }
+                    ),
+                    select_chr.set_options(GENERAL_STATE["chromosomes_option"]),
                 )
                 if v.value != ""
-                else None
+                else harmonize_chrom_options(),
+                select_chr.set_options(
+                    GENERAL_STATE["chromosomes_option"],
+                    value=GENERAL_STATE["chromosomes_option"][0],
+                ),
             )
             if not v.error
             else (
