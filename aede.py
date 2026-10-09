@@ -442,6 +442,7 @@ def search_page():
             ui.button(
                 "Search",
                 on_click=lambda: (
+                    clear_results(all_variants_type),
                     run_variant_search(),
                     ui.notify("Request sent to the API"),
                 ),
@@ -672,12 +673,32 @@ def search_page():
                         ui.aggrid(
                             {
                                 "columnDefs": [
-                                    {"field": "chrom"},
-                                    {"field": "pos", "filter": "agNumberColumnFilter"},
-                                    {"field": "id", "filter": "agTextColumnFilter"},
-                                    {"field": "ref", "filter": "agTextColumnFilter"},
-                                    {"field": "alt", "filter": "agTextColumnFilter"},
-                                    {"field": "filter", "filter": "agTextColumnFilter"},
+                                    {"headerName": "CHROM", "field": "chrom"},
+                                    {
+                                        "headerName": "POS",
+                                        "field": "pos",
+                                        "filter": "agNumberColumnFilter",
+                                    },
+                                    {
+                                        "headerName": "ID",
+                                        "field": "id",
+                                        "filter": "agTextColumnFilter",
+                                    },
+                                    {
+                                        "headerName": "REF",
+                                        "field": "ref",
+                                        "filter": "agTextColumnFilter",
+                                    },
+                                    {
+                                        "headerName": "ALT",
+                                        "field": "alt",
+                                        "filter": "agTextColumnFilter",
+                                    },
+                                    {
+                                        "headerName": "FILTER",
+                                        "field": "filter",
+                                        "filter": "agTextColumnFilter",
+                                    },
                                     {"field": "AC", "filter": "agNumberColumnFilter"},
                                     {"field": "AN", "filter": "agNumberColumnFilter"},
                                     {"field": "AF", "filter": "agNumberColumnFilter"},
