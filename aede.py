@@ -233,7 +233,6 @@ for variant_type in all_variants_type:
     GENERAL_STATE.setdefault(f"display_{variant_type}_csq", False)
     GENERAL_STATE.setdefault(f"display_{variant_type}_variants", True)
     GENERAL_STATE.setdefault(f"selected_{variant_type}_variant", False)
-GENERAL_STATE.setdefault("chromosomes_option", chromosomes)
 
 
 ########
