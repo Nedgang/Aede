@@ -439,7 +439,21 @@ def search_page():
                 ),
                 variant_id.set_value(""),
                 harmonize_chrom_options(select_chr, request, base_chr),
-            )
+            ),
+            select_features.set_options(
+                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .collect()["Feature"]
+                .unique()
+                .sort()
+                .to_list()
+            ),
+            select_gene.set_options(
+                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .collect()["SYMBOL"]
+                .unique()
+                .sort()
+                .to_list()
+            ),
         ),
     )
     # Impact of selecting gene on chromosomes choice, and features options
@@ -466,6 +480,41 @@ def search_page():
                     else None,
                 )
                 if g.value is not None
+                else harmonize_chrom_options(select_chr, request, base_chr)
+            ),
+            select_features.set_options(
+                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .collect()["Feature"]
+                .unique()
+                .sort()
+                .to_list()
+            ),
+            select_gene.set_options(
+                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .collect()["SYMBOL"]
+                .unique()
+                .sort()
+                .to_list()
+            ),
+        )
+    )
+    # Impact of selecting gene on chromosomes choice, and genes options
+    select_features.on_value_change(
+        lambda f, base_chr=chromosomes, request=REQUEST: (
+            (
+                (
+                    select_chr.set_options(
+                        sorted(
+                            link_feature_chrom.filter(pl.col("Feature").is_in(f.value))
+                            .collect()["chrom"]
+                            .unique()
+                            .to_list(),
+                            key=lambda c: int(c.split("chr")[-1]),
+                        ),
+                    ),
+                    select_chr.set_value(select_chr.options[0]),
+                )
+                if f.value != []
                 else harmonize_chrom_options(select_chr, request, base_chr)
             ),
             select_features.set_options(
