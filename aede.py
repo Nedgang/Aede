@@ -65,7 +65,7 @@ def reset_request() -> dict:
     }
 
 
-async def output_selected_row(variant_type):
+async def output_selected_row(variant_type) -> None:
     """
     Update details in display depending on the selected variant in result table.
     """
@@ -175,6 +175,48 @@ def harmonize_chrom_options(
                 .to_list(),
                 value=select_chr.options[0],
             )
+
+
+def clear_results(variants: list(str)):
+    for variant_type in variants:
+        GENERAL_STATE["result_table_" + variant_type].options["rowData"].clear()
+        GENERAL_STATE[f"selected_{variant_type}_variant"] = False
+        GENERAL_STATE[f"details_variant_{variant_type}"] = {
+            col: ""
+            for col in list(details_label_column.values())
+            + list(frequencies_label_column.values())
+            + list(gnomAD_label_column.values())
+        }
+        GENERAL_STATE[f"details_table_{variant_type}"].update_rows(
+            [
+                {
+                    "pop": "All",
+                    "AC": "",
+                    "AN": "",
+                    "AF": "",
+                },
+                {
+                    "pop": "XY",
+                    "AC": "",
+                    "AN": "",
+                    "AF": "",
+                },
+                {
+                    "pop": "XX",
+                    "AC": "",
+                    "AN": "",
+                    "AF": "",
+                },
+                {
+                    "pop": "grpmax",
+                    "AC": "",
+                    "AN": "",
+                    "AF": "",
+                },
+            ]
+        )
+        GENERAL_STATE[f"select_{variant_type}_features"].set_options([])
+        GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].clear()
 
 
 ####################
@@ -391,12 +433,15 @@ def search_page():
             ui.button(
                 "Reset",
                 color="red",
-                on_click=lambda: REQUEST.update(reset_request()),
+                on_click=lambda: (
+                    REQUEST.update(reset_request()),
+                    clear_results(all_variants_type),
+                ),
             )
             ui.space()
             ui.button(
                 "Search",
-                on_click=lambda left_drawer=left_drawer: (
+                on_click=lambda: (
                     run_variant_search(),
                     ui.notify("Request sent to the API", position="bottom-left"),
                 ),
