@@ -24,9 +24,9 @@ def run_variant_search() -> None:
             GENERAL_STATE["result_table_" + variant].options["rowData"].extend(
                 ans.json()[0][variant]
             )
-        ui.notify("Results received!")
+        ui.notify("Results received!", position="bottom-left")
     else:
-        ui.notify(ans.json()["detail"], type="negative")
+        ui.notify(ans.json()["detail"], type="negative", position="center")
 
 
 def run_csq_search(request) -> None:
@@ -41,7 +41,7 @@ def run_csq_search(request) -> None:
             ans.json()
         )
     else:
-        ui.notify(ans.json()["detail"], type="negative")
+        ui.notify(ans.json()["detail"], type="negative", position="center")
 
 
 def reset_request() -> dict:
@@ -398,7 +398,7 @@ def search_page():
                 "Search",
                 on_click=lambda left_drawer=left_drawer: (
                     run_variant_search(),
-                    ui.notify("Request sent to the API"),
+                    ui.notify("Request sent to the API", position="bottom-left"),
                 ),
             )
     # WIDGETS INTERACTIONS
