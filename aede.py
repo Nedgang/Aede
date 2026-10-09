@@ -509,6 +509,8 @@ def search_page():
                     else None,
                 )
                 if g.value is not None
+                and REQUEST["id"] == ""
+                and REQUEST["feature"] == []
                 else harmonize_chrom_options(
                     select_chr, REQUEST, base_chr, link_feature_chrom, link_id_chrom
                 )
