@@ -580,6 +580,9 @@ def search_page():
                 else None
             )
         ),
+    ).on(
+        "blur",
+        lambda: start_value.set_value(0) if start_value.value is None else None,
     )
     stop_value.on(
         "change",
@@ -591,6 +594,17 @@ def search_page():
                 if stop_value.value < start_value.value
                 else None
             )
+        ),
+    ).on(
+        "blur",
+        lambda: (
+            (
+                stop_value.set_value(0)
+                if start_value.value == 0
+                else stop_value.set_value(start_value.value)
+            )
+            if stop_value.value is None
+            else None
         ),
     )
 
