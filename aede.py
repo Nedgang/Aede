@@ -312,11 +312,11 @@ for variant_type in all_variants_type:
 def search_page():
     # PAGE & WIDGETS DESCRIPTION
     left_drawer = ui.left_drawer(bordered=True, elevated=True)
-    with ui.header(elevated=True).classes():
-        ui.image("logo/logo_temporaire.png").classes("w-130")
-        # ui.label("onlinePOPGEN").classes("text-h3")
-        ui.button(icon="wysiwyg", on_click=lambda: left_drawer.toggle())
-        ui.switch("Dark mode").bind_value(ui.dark_mode())
+    with ui.header(elevated=True).classes("items-center justify-between"):
+        with ui.row():
+            ui.image("logo/logo_temporaire.png").classes("w-130")
+            ui.button(icon="wysiwyg", on_click=lambda: left_drawer.toggle())
+        ui.switch("Dark mode").bind_value(ui.dark_mode()).props("color=white")
 
     with left_drawer, ui.column().classes("w-full"):
         ui.label("Request").classes("text-h5")
@@ -508,6 +508,7 @@ def search_page():
                 ui.notify(
                     f"{v.value} not in POPGEN database for the request available chromosomes.",
                     type="warning",
+                    position="center",
                 ),
                 variant_id.set_value(""),
                 harmonize_chrom_options(
