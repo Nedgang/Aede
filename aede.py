@@ -313,8 +313,8 @@ def search_page():
     # PAGE & WIDGETS DESCRIPTION
     left_drawer = ui.left_drawer(bordered=True, elevated=True)
     with ui.header(elevated=True).classes():
-        ui.image("logo/RF-Inserm_Simplifie_rvb_Blanc.png").classes("w-64")
-        ui.label("onlinePOPGEN").classes("text-h3")
+        ui.image("logo/logo_temporaire.png").classes("w-130")
+        # ui.label("onlinePOPGEN").classes("text-h3")
         ui.button(icon="wysiwyg", on_click=lambda: left_drawer.toggle())
         ui.switch("Dark mode").bind_value(ui.dark_mode())
 
