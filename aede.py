@@ -426,7 +426,7 @@ def search_page():
                     select_chr.set_value(select_chr.options[0]),
                 )
                 if v.value != ""
-                else harmonize_chrom_options(select_chr, base_chr),
+                else harmonize_chrom_options(select_chr, request, base_chr),
             )
             if not v.error
             else (
