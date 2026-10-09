@@ -484,14 +484,6 @@ def search_page():
             ),
         )
     )
-    # select_gene.on_value_change(
-    #     lambda c, select_chr=select_chr: (
-    #         select_chr.set_value(gene_to_chrom[c.value])
-    #         if c.value is not None
-    #         else None,
-    #         select_chr.disable() if c.value is not None else select_chr.enable(),
-    #     ),
-    # )
     # Start can't be higher than Stop
     start_value.on(
         "change",
