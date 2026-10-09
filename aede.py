@@ -416,7 +416,7 @@ def search_page():
     }
     variant_id.on(
         "blur",
-        lambda v=variant_id, base_chr=chromosomes: (
+        lambda v=variant_id, base_chr=chromosomes, request=REQUEST: (
             (
                 (
                     select_chr.set_value(
@@ -442,7 +442,7 @@ def search_page():
                     type="warning",
                 ),
                 variant_id.set_value(""),
-                harmonize_chrom_options(select_chr, REQUEST, base_chr),
+                harmonize_chrom_options(select_chr, request, base_chr),
             )
         ),
     )
