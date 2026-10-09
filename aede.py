@@ -144,9 +144,37 @@ async def output_selected_row(variant_type):
         GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].clear()
 
 
-def harmonize_chrom_options(select_chr, request: dict, base_chr: list) -> None:
+def harmonize_chrom_options(
+    select_chr,
+    request: dict,
+    base_chr: list,
+    link_feature_chrom: pl.LazyFrame,
+    link_id_chrom: pl.LazyFrame,
+) -> None:
     if request["id"] == "" and request["feature"] == [] and request["gene"] is None:
         select_chr.set_options(base_chr, value=base_chr[0])
+    else:
+        if request["id"] != "":
+            select_chr.set_options(
+                link_id_chrom.filter(pl.col("id") == request["id"])
+                .collect()["chrom"]
+                .to_list(),
+                value=select_chr.options[0],
+            )
+        elif request["feature"] != []:
+            select_chr.set_options(
+                link_feature_chrom.filter(pl.col("Feature").is_in(request["feature"]))
+                .collect()["chrom"]
+                .to_list(),
+                value=select_chr.options[0],
+            )
+        else:
+            select_chr.set_options(
+                link_feature_chrom.filter(pl.col("SYMBOL") == request["gene"])
+                .collect()["chrom"]
+                .to_list(),
+                value=select_chr.options[0],
+            )
 
 
 ####################
@@ -426,7 +454,9 @@ def search_page():
                     select_chr.set_value(select_chr.options[0]),
                 )
                 if v.value != ""
-                else harmonize_chrom_options(select_chr, request, base_chr),
+                else harmonize_chrom_options(
+                    select_chr, request, base_chr, link_feature_chrom, link_id_chrom
+                ),
             )
             if not v.error
             else (
@@ -435,7 +465,9 @@ def search_page():
                     type="warning",
                 ),
                 variant_id.set_value(""),
-                harmonize_chrom_options(select_chr, request, base_chr),
+                harmonize_chrom_options(
+                    select_chr, request, base_chr, link_feature_chrom, link_id_chrom
+                ),
             ),
             select_features.set_options(
                 link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
@@ -455,7 +487,7 @@ def search_page():
     )
     # Impact of selecting gene on chromosomes choice, and features options
     select_gene.on_value_change(
-        lambda g, base_chr=chromosomes, request=REQUEST: (
+        lambda g, base_chr=chromosomes: (
             (
                 (
                     select_chr.set_options(
@@ -477,7 +509,9 @@ def search_page():
                     else None,
                 )
                 if g.value is not None
-                else harmonize_chrom_options(select_chr, request, base_chr)
+                else harmonize_chrom_options(
+                    select_chr, REQUEST, base_chr, link_feature_chrom, link_id_chrom
+                )
             ),
             select_features.set_options(
                 link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
@@ -512,7 +546,9 @@ def search_page():
                     select_chr.set_value(select_chr.options[0]),
                 )
                 if f.value != []
-                else harmonize_chrom_options(select_chr, request, base_chr)
+                else harmonize_chrom_options(
+                    select_chr, request, base_chr, link_feature_chrom, link_id_chrom
+                )
             ),
             select_features.set_options(
                 link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
