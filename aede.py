@@ -24,7 +24,7 @@ def run_variant_search() -> None:
             GENERAL_STATE["result_table_" + variant].options["rowData"].extend(
                 ans.json()[0][variant]
             )
-        ui.notify("Results received!", position="bottom-left")
+        ui.notify("Results received!")
     else:
         ui.notify(ans.json()["detail"], type="negative", position="center")
 
@@ -443,7 +443,7 @@ def search_page():
                 "Search",
                 on_click=lambda: (
                     run_variant_search(),
-                    ui.notify("Request sent to the API", position="bottom-left"),
+                    ui.notify("Request sent to the API"),
                 ),
             )
     # WIDGETS INTERACTIONS
