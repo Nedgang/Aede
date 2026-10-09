@@ -419,11 +419,6 @@ def search_page():
         lambda v=variant_id, base_chr=chromosomes, request=REQUEST: (
             (
                 (
-                    select_chr.set_value(
-                        link_id_chrom.filter(pl.col("id") == v.value).collect()[
-                            "chrom"
-                        ][0]
-                    ),
                     select_chr.set_options(
                         [
                             link_id_chrom.filter(pl.col("id") == v.value).collect()[
@@ -431,6 +426,7 @@ def search_page():
                             ][0]
                         ]
                     ),
+                    select_chr.set_value(select_chr.options[0]),
                 )
                 if v.value != ""
                 else harmonize_chrom_options(select_chr, base_chr),
@@ -445,6 +441,48 @@ def search_page():
                 harmonize_chrom_options(select_chr, request, base_chr),
             )
         ),
+    )
+    # Impact of selecting gene on chromosomes choice, and features options
+    select_gene.on_value_change(
+        lambda g, base_chr=chromosomes, request=REQUEST: (
+            (
+                (
+                    select_chr.set_options(
+                        sorted(
+                            link_feature_chrom.filter(pl.col("SYMBOL") == g.value)
+                            .collect()["chrom"]
+                            .unique()
+                            .to_list(),
+                            key=lambda c: int(c.split("chr")[-1]),
+                        ),
+                    ),
+                    select_chr.set_value(select_chr.options[0]),
+                    ui.notify(
+                        "Multiple chr possible for this selected gene",
+                        type="warning",
+                        position="center",
+                    )
+                    if len(select_chr.options) > 1
+                    else None,
+                )
+                if g.value is not None
+                else harmonize_chrom_options(select_chr, request, base_chr)
+            ),
+            select_features.set_options(
+                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .collect()["Feature"]
+                .unique()
+                .sort()
+                .to_list()
+            ),
+            select_gene.set_options(
+                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .collect()["SYMBOL"]
+                .unique()
+                .sort()
+                .to_list()
+            ),
+        )
     )
     # select_gene.on_value_change(
     #     lambda c, select_chr=select_chr: (
