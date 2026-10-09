@@ -144,9 +144,9 @@ async def output_selected_row(variant_type):
         GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].clear()
 
 
-def harmonize_chrom_options() -> None:
+def harmonize_chrom_options(select_chr, base_chr: list) -> None:
     if REQUEST["id"] == "" and REQUEST["feature"] == [] and REQUEST["gene"] is None:
-        GENERAL_STATE["chromosomes_option"] = chromosomes
+        select_chr.set_options(base_chr, value=base_chr[0])
 
 
 ####################
@@ -281,26 +281,7 @@ def search_page():
         )
         # ID search
         variant_id = (
-            ui.input(
-                label="Variant ID",
-                validation={
-                    "Not in DB": lambda v: (
-                        len(
-                            link_id_chrom.filter(
-                                pl.col("chrom").is_in(
-                                    GENERAL_STATE["chromosomes_option"]
-                                )
-                            )
-                            .filter(pl.col("id") == v)
-                            .collect()
-                        )
-                        > 0
-                        or v == ""
-                    )
-                },
-            )
-            .bind_value(REQUEST, "id")
-            .classes("w-full")
+            ui.input(label="Variant ID").bind_value(REQUEST, "id").classes("w-full")
         )
         # Feature
         select_features = (
@@ -422,10 +403,21 @@ def search_page():
             gnomad_region_switch.set_value(True) if pass_gnomad_switch.value else None,
         ),
     )
-    # Check if variant id exist, and alter chromosome choice if winning
+    # Check if variant id exist in those chr options, and alter chromosome choice if winning
+    variant_id.validation = {
+        "Not in DB": lambda v: (
+            len(
+                link_id_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .filter(pl.col("id") == v)
+                .collect()
+            )
+            > 0
+            or v == ""
+        )
+    }
     variant_id.on(
         "blur",
-        lambda v=variant_id: (
+        lambda v=variant_id, base_chr=chromosomes: (
             (
                 (
                     select_chr.set_value(
@@ -433,23 +425,16 @@ def search_page():
                             "chrom"
                         ][0]
                     ),
-                    GENERAL_STATE.update(
-                        {
-                            "chromosomes_option": [
-                                link_id_chrom.filter(pl.col("id") == v.value).collect()[
-                                    "chrom"
-                                ][0]
-                            ]
-                        }
+                    select_chr.set_options(
+                        [
+                            link_id_chrom.filter(pl.col("id") == v.value).collect()[
+                                "chrom"
+                            ][0]
+                        ]
                     ),
-                    select_chr.set_options(GENERAL_STATE["chromosomes_option"]),
                 )
                 if v.value != ""
-                else harmonize_chrom_options(),
-                select_chr.set_options(
-                    GENERAL_STATE["chromosomes_option"],
-                    value=GENERAL_STATE["chromosomes_option"][0],
-                ),
+                else harmonize_chrom_options(select_chr, base_chr),
             )
             if not v.error
             else (
@@ -458,6 +443,7 @@ def search_page():
                     type="warning",
                 ),
                 variant_id.set_value(""),
+                harmonize_chrom_options(select_chr, base_chr),
             )
         ),
     )
