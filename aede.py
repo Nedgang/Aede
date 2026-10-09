@@ -144,8 +144,8 @@ async def output_selected_row(variant_type):
         GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].clear()
 
 
-def harmonize_chrom_options(select_chr, base_chr: list) -> None:
-    if REQUEST["id"] == "" and REQUEST["feature"] == [] and REQUEST["gene"] is None:
+def harmonize_chrom_options(select_chr, request: dict, base_chr: list) -> None:
+    if request["id"] == "" and request["feature"] == [] and request["gene"] is None:
         select_chr.set_options(base_chr, value=base_chr[0])
 
 
@@ -442,7 +442,7 @@ def search_page():
                     type="warning",
                 ),
                 variant_id.set_value(""),
-                harmonize_chrom_options(select_chr, base_chr),
+                harmonize_chrom_options(select_chr, REQUEST, base_chr),
             )
         ),
     )
