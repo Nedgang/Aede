@@ -281,7 +281,7 @@ def search_page():
         # ID search
         variant_id = (
             ui.input(label="Variant ID").bind_value(REQUEST, "id").classes("w-full")
-        )
+        ).props("debounce=500")
         # Feature
         select_features = (
             ui.select(
@@ -299,9 +299,6 @@ def search_page():
             .bind_value(REQUEST, "feature")
             .classes("w-full")
         )
-        # select_features.on_value_change(
-        #     lambda s=select_features: s.set_options(s.value + ["test"])
-        # )
         # Variant impact
         with open("../Mneme/Impact.txt", "r") as file:
             ui.select(
