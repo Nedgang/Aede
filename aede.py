@@ -335,7 +335,7 @@ def search_page():
         # Gene search
         select_gene = (
             ui.select(
-                label="Gene",
+                label="Gene symbol",
                 options=link_feature_chrom.select("SYMBOL")
                 .collect()
                 .to_series()
