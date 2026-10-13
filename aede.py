@@ -847,6 +847,7 @@ def search_page():
                             options=[],
                             multiple=True,
                             clearable=True,
+                            with_input=True,
                         )
                         .bind_value_to(
                             GENERAL_STATE, f"selected_{variant_type}_features"
