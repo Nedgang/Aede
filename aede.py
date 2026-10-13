@@ -315,7 +315,9 @@ def search_page():
     with ui.header(elevated=True).classes("items-center justify-between"):
         with ui.row():
             ui.image("logo/logo_temporaire.png").classes("w-130")
-            ui.button(icon="wysiwyg", on_click=lambda: left_drawer.toggle())
+            ui.button(icon="wysiwyg", on_click=lambda: left_drawer.toggle()).tooltip(
+                "Request formulary"
+            )
         ui.switch("Dark mode").bind_value(ui.dark_mode()).props("color=white")
 
     with left_drawer, ui.column().classes("w-full"):
@@ -346,11 +348,24 @@ def search_page():
                 clearable=True,
             )
             .bind_value(REQUEST, "gene")
+            .tooltip(
+                """You can search variant which impact a gene symbol. Choosing one lead to
+                limitation to the chromosome choice.\n
+                Options will be limited to the possible chromosomes choice: you won't be
+                able to select a gene on chr13 if you selected another parameter which set
+                chr to only 18."""
+            )
             .classes("w-full")
         )
         # ID search
         variant_id = (
-            ui.input(label="Variant ID").bind_value(REQUEST, "id").classes("w-full")
+            ui.input(label="Variant ID")
+            .bind_value(REQUEST, "id")
+            .tooltip("""It will be automaticly checked if it is present in the database at
+                the available chromosome, and limit chrom choice if it's the case.
+                Ex: it won't validate a variant on chr21 if other parameters (gene,
+                feature, etc...) limit choice to chr18.""")
+            .classes("w-full")
         ).props("debounce=500")
         # Feature
         select_features = (
@@ -367,6 +382,10 @@ def search_page():
                 clearable=True,
             )
             .bind_value(REQUEST, "feature")
+            .tooltip("""Ensemble stable ID of Feature, which can be Transcript,
+                     RegulatoryFeature, MotifFeature. Options will be limited to the
+                     possible choice of chromosome.
+                     Selecting one will also affect the available choice of chromosome.""")
             .classes("w-full")
         )
         # Variant impact
@@ -394,6 +413,10 @@ def search_page():
                 options=chromosomes,
             )
             .bind_value(REQUEST, "chr")
+            .tooltip(
+                """Only one at a time, options affected by choice made on gene, variant
+                and feature."""
+            )
             .classes("w-1/2")
         )
         # Selection start
