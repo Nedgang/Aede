@@ -114,30 +114,8 @@ async def output_selected_row(variant_type) -> None:
         }
         GENERAL_STATE[f"details_table_{variant_type}"].update_rows(
             [
-                {
-                    "pop": "All",
-                    "AC": "",
-                    "AN": "",
-                    "AF": "",
-                },
-                {
-                    "pop": "XY",
-                    "AC": "",
-                    "AN": "",
-                    "AF": "",
-                },
-                {
-                    "pop": "XX",
-                    "AC": "",
-                    "AN": "",
-                    "AF": "",
-                },
-                {
-                    "pop": "grpmax",
-                    "AC": "",
-                    "AN": "",
-                    "AF": "",
-                },
+                {key: line[key] if key == "pop" else "" for key in line}
+                for line in GENERAL_STATE[f"details_table_{variant_type}"].rows
             ]
         )
         GENERAL_STATE[f"select_{variant_type}_features"].set_options([])
@@ -189,30 +167,8 @@ def clear_results(variants: list(str)):
         }
         GENERAL_STATE[f"details_table_{variant_type}"].update_rows(
             [
-                {
-                    "pop": "All",
-                    "AC": "",
-                    "AN": "",
-                    "AF": "",
-                },
-                {
-                    "pop": "XY",
-                    "AC": "",
-                    "AN": "",
-                    "AF": "",
-                },
-                {
-                    "pop": "XX",
-                    "AC": "",
-                    "AN": "",
-                    "AF": "",
-                },
-                {
-                    "pop": "grpmax",
-                    "AC": "",
-                    "AN": "",
-                    "AF": "",
-                },
+                {key: line[key] if key == "pop" else "" for key in line}
+                for line in GENERAL_STATE[f"details_table_{variant_type}"].rows
             ]
         )
         GENERAL_STATE[f"select_{variant_type}_features"].set_options([])
