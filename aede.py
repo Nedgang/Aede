@@ -75,32 +75,45 @@ async def output_selected_row(variant_type) -> None:
     if selected_row:
         GENERAL_STATE[f"selected_{variant_type}_variant"] = True
         GENERAL_STATE[f"details_variant_{variant_type}"] = selected_row
+        # GENERAL_STATE[f"details_table_{variant_type}"].update_rows(
+        #     [
+        #         {
+        #             "pop": "All",
+        #             "AC": selected_row["AC"],
+        #             "AN": selected_row["AN"],
+        #             "AF": selected_row["AF"],
+        #         },
+        #         {
+        #             "pop": "XY",
+        #             "AC": selected_row["AC_XY"],
+        #             "AN": selected_row["AN_XY"],
+        #             "AF": selected_row["AF_XY"],
+        #         },
+        #         {
+        #             "pop": "XX",
+        #             "AC": selected_row["AC_XX"],
+        #             "AN": selected_row["AN_XX"],
+        #             "AF": selected_row["AF_XX"],
+        #         },
+        #         {
+        #             "pop": "grpmax",
+        #             "AC": selected_row["AC_grpmax"],
+        #             "AN": selected_row["AN_grpmax"],
+        #             "AF": selected_row["AF_grpmax"],
+        #         },
+        #     ]
+        # )
         GENERAL_STATE[f"details_table_{variant_type}"].update_rows(
             [
                 {
-                    "pop": "All",
-                    "AC": selected_row["AC"],
-                    "AN": selected_row["AN"],
-                    "AF": selected_row["AF"],
-                },
-                {
-                    "pop": "XY",
-                    "AC": selected_row["AC_XY"],
-                    "AN": selected_row["AN_XY"],
-                    "AF": selected_row["AF_XY"],
-                },
-                {
-                    "pop": "XX",
-                    "AC": selected_row["AC_XX"],
-                    "AN": selected_row["AN_XX"],
-                    "AF": selected_row["AF_XX"],
-                },
-                {
-                    "pop": "grpmax",
-                    "AC": selected_row["AC_grpmax"],
-                    "AN": selected_row["AN_grpmax"],
-                    "AF": selected_row["AF_grpmax"],
-                },
+                    key: row[key]
+                    if key == "pop"
+                    else selected_row[key]
+                    if row["pop"] == "All"
+                    else selected_row[f"{key}_{row['pop']}"]
+                    for key in row
+                }
+                for row in GENERAL_STATE[f"details_table_{variant_type}"].rows
             ]
         )
         GENERAL_STATE[f"select_{variant_type}_features"].set_options(
