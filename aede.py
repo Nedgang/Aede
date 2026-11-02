@@ -742,27 +742,22 @@ def search_page():
                             GENERAL_STATE[f"details_table_{variant_type}"] = ui.table(
                                 columns=[
                                     {
-                                        "name": "pop_type",
-                                        "label": "",
                                         "field": "pop",
                                         "align": "center",
                                     },
                                     {
-                                        "name": "AC",
                                         "label": "AC",
                                         "field": "AC",
                                         "align": "center",
                                         "sortable": True,
                                     },
                                     {
-                                        "name": "AN",
                                         "label": "AN",
                                         "field": "AN",
                                         "align": "center",
                                         "sortable": True,
                                     },
                                     {
-                                        "name": "AF",
                                         "label": "AF",
                                         "field": "AF",
                                         "align": "center",
