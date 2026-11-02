@@ -69,40 +69,44 @@ async def output_selected_row(variant_type) -> None:
     """
     Update details in display depending on the selected variant in result table.
     """
-    row = await GENERAL_STATE[f"result_table_{variant_type}"].get_selected_row()
-    if row:
+    selected_row = await GENERAL_STATE[
+        f"result_table_{variant_type}"
+    ].get_selected_row()
+    if selected_row:
         GENERAL_STATE[f"selected_{variant_type}_variant"] = True
-        GENERAL_STATE[f"details_variant_{variant_type}"] = row
+        GENERAL_STATE[f"details_variant_{variant_type}"] = selected_row
         GENERAL_STATE[f"details_table_{variant_type}"].update_rows(
             [
                 {
                     "pop": "All",
-                    "AC": row["AC"],
-                    "AN": row["AN"],
-                    "AF": row["AF"],
+                    "AC": selected_row["AC"],
+                    "AN": selected_row["AN"],
+                    "AF": selected_row["AF"],
                 },
                 {
                     "pop": "XY",
-                    "AC": row["AC_XY"],
-                    "AN": row["AN_XY"],
-                    "AF": row["AF_XY"],
+                    "AC": selected_row["AC_XY"],
+                    "AN": selected_row["AN_XY"],
+                    "AF": selected_row["AF_XY"],
                 },
                 {
                     "pop": "XX",
-                    "AC": row["AC_XX"],
-                    "AN": row["AN_XX"],
-                    "AF": row["AF_XX"],
+                    "AC": selected_row["AC_XX"],
+                    "AN": selected_row["AN_XX"],
+                    "AF": selected_row["AF_XX"],
                 },
                 {
                     "pop": "grpmax",
-                    "AC": row["AC_grpmax"],
-                    "AN": row["AN_grpmax"],
-                    "AF": row["AF_grpmax"],
+                    "AC": selected_row["AC_grpmax"],
+                    "AN": selected_row["AN_grpmax"],
+                    "AF": selected_row["AF_grpmax"],
                 },
             ]
         )
         GENERAL_STATE[f"select_{variant_type}_features"].set_options(
-            row["Feature"].split(",") if row["Feature"] is not None else []
+            selected_row["Feature"].split(",")
+            if selected_row["Feature"] is not None
+            else []
         )
     else:
         GENERAL_STATE[f"selected_{variant_type}_variant"] = False
