@@ -19,28 +19,24 @@ def run_variant_search() -> None:
     answer = requests.get("http://localhost:8000/query/v1/variants/", params=REQUEST)
     if answer.ok:
         for variant in answer.json()[0]:
+            GENERAL_STATE[f"result_request_{variant}"] = pl.from_dicts(
+                answer.json()[0][variant]
+            )
             GENERAL_STATE[f"result_table_{variant}"].options["rowData"].clear()
             GENERAL_STATE[f"result_table_{variant}"].options["rowData"].extend(
-                answer.json()[0][variant]
+                GENERAL_STATE[f"result_request_{variant}"]
+                .select(
+                    pl.col(
+                        ["variant_key"]
+                        + list(GENERAL_STATE[f"details_variant_{variant}"].keys())
+                    )
+                )
+                .unique()
+                .to_dicts()
             )
         ui.notify("Results received!")
     else:
         ui.notify(answer.json()["detail"], type="negative", position="center")
-
-
-# def run_csq_search(request) -> None:
-#     """
-#     Send request for CSQ information based on chr, variant_type, variant_key and feature
-#     to database and update the aggrid.
-#     """
-#     ans = requests.get("http://localhost:8000/query/v1/csq", params=request)
-#     if ans.ok:
-#         GENERAL_STATE[f"csq_table_{request['variant_type']}"].options["rowData"].clear()
-#         GENERAL_STATE[f"csq_table_{request['variant_type']}"].options["rowData"].extend(
-#             ans.json()
-#         )
-#     else:
-#         ui.notify(ans.json()["detail"], type="negative", position="center")
 
 
 def reset_request() -> dict:
@@ -224,7 +220,7 @@ GENERAL_STATE = {
 }
 for variant_type in all_variants_type:
     GENERAL_STATE.setdefault("result_table_" + variant_type, None)
-    GENERAL_STATE.setdefault("results_request_" + variant_type, None)
+    GENERAL_STATE.setdefault("result_request_" + variant_type, None)
     GENERAL_STATE.setdefault("csq_table_" + variant_type, None)
     GENERAL_STATE.setdefault(
         "details_variant_" + variant_type,
