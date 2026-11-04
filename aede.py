@@ -16,16 +16,16 @@ def run_variant_search() -> None:
     Send the get request to the API, handle the answer and return a dict with results
     from database search.
     """
-    ans = requests.get("http://localhost:8000/query/v1/variants/", params=REQUEST)
-    if ans.ok:
-        for variant in ans.json()[0]:
+    answer = requests.get("http://localhost:8000/query/v1/variants/", params=REQUEST)
+    if answer.ok:
+        for variant in answer.json()[0]:
             GENERAL_STATE[f"result_table_{variant}"].options["rowData"].clear()
             GENERAL_STATE[f"result_table_{variant}"].options["rowData"].extend(
-                ans.json()[0][variant]
+                answer.json()[0][variant]
             )
         ui.notify("Results received!")
     else:
-        ui.notify(ans.json()["detail"], type="negative", position="center")
+        ui.notify(answer.json()["detail"], type="negative", position="center")
 
 
 # def run_csq_search(request) -> None:
