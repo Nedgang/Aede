@@ -783,75 +783,75 @@ def search_page():
             with (
                 ui.row()
                 .classes("w-full")
-                .bind_visibility_from(GENERAL_STATE, f"display_{variant_type}_csq")
+                .bind_visibility_from(GENERAL_STATE, f"display_{variant_type}_csq"),
+                ui.card().classes("w-99/100 h-105"),
             ):
-                with ui.card().classes("w-99/100 h-105"):
-                    with ui.row():
-                        ui.label(f"CSQ on {variant_type}").classes("text-h5")
-                        col_select = ui.button(icon="menu")
-                    GENERAL_STATE[f"csq_table_{variant_type}"] = ui.aggrid(
-                        {
-                            "columnDefs": [
-                                {
-                                    "field": "Consequence",
-                                    "filter": "agTextColumnFilter",
-                                },
-                                {"field": "IMPACT", "filter": "agTextColumnFilter"},
-                                {"field": "csq_SYMBOL", "filter": "agTextColumnFilter"},
-                                {"field": "Gene", "filter": "agTextColumnFilter"},
-                                {
-                                    "field": "csq_Feature_type",
-                                    "filter": "agTextColumnFilter",
-                                },
-                                {
-                                    "field": "csq_Feature",
-                                    "filter": "agTextColumnFilter",
-                                },
-                                {"field": "BIOTYPE", "filter": "agTextColumnFilter"},
-                                {"field": "EXON", "filter": "agTextColumnFilter"},
-                                {"field": "INTRON", "filter": "agTextColumnFilter"},
-                                {
-                                    "field": "CDS_position",
-                                    "filter": "agTextColumnFilter",
-                                },
-                                {
-                                    "field": "Amino_acids",
-                                    "filter": "agTextColumnFilter",
-                                },
-                                {"field": "Codons", "filter": "agTextColumnFilter"},
-                            ],
-                            "rowData": [],
-                            "rowSelection": {"mode": "None"},
-                        },
-                        theme="balham",
-                        auto_size_columns=True,
-                    ).classes("w-full h-9/10")
-                    # Allowing columns selection
-                    with col_select, ui.menu(), ui.column().classes("'gap-0 p-2'"):
-                        for column in [
-                            i
-                            for i in GENERAL_STATE[f"csq_table_{variant_type}"].options[
-                                "columnDefs"
-                            ]
-                        ]:
-                            colname = (
-                                column["field"]
-                                if "headerName" not in column
-                                else column["headerName"]
-                            )
-                            ui.switch(
-                                colname,
-                                value=True,
-                                on_change=lambda e, variant_type=variant_type, column=column: (
-                                    GENERAL_STATE[
-                                        f"csq_table_{variant_type}"
-                                    ].run_grid_method(
-                                        "setColumnsVisible",
-                                        [column["field"]],
-                                        e.value,
-                                    )
-                                ),
-                            )
+                with ui.row():
+                    ui.label(f"CSQ on {variant_type}").classes("text-h5")
+                    col_select = ui.button(icon="menu")
+                GENERAL_STATE[f"csq_table_{variant_type}"] = ui.aggrid(
+                    {
+                        "columnDefs": [
+                            {
+                                "field": "Consequence",
+                                "filter": "agTextColumnFilter",
+                            },
+                            {"field": "IMPACT", "filter": "agTextColumnFilter"},
+                            {"field": "csq_SYMBOL", "filter": "agTextColumnFilter"},
+                            {"field": "Gene", "filter": "agTextColumnFilter"},
+                            {
+                                "field": "csq_Feature_type",
+                                "filter": "agTextColumnFilter",
+                            },
+                            {
+                                "field": "csq_Feature",
+                                "filter": "agTextColumnFilter",
+                            },
+                            {"field": "BIOTYPE", "filter": "agTextColumnFilter"},
+                            {"field": "EXON", "filter": "agTextColumnFilter"},
+                            {"field": "INTRON", "filter": "agTextColumnFilter"},
+                            {
+                                "field": "CDS_position",
+                                "filter": "agTextColumnFilter",
+                            },
+                            {
+                                "field": "Amino_acids",
+                                "filter": "agTextColumnFilter",
+                            },
+                            {"field": "Codons", "filter": "agTextColumnFilter"},
+                        ],
+                        "rowData": [],
+                        "rowSelection": {"mode": "None"},
+                    },
+                    theme="balham",
+                    auto_size_columns=True,
+                ).classes("w-full h-9/10")
+                # Allowing columns selection
+                with col_select, ui.menu(), ui.column().classes("'gap-0 p-2'"):
+                    for column in [
+                        i
+                        for i in GENERAL_STATE[f"csq_table_{variant_type}"].options[
+                            "columnDefs"
+                        ]
+                    ]:
+                        colname = (
+                            column["field"]
+                            if "headerName" not in column
+                            else column["headerName"]
+                        )
+                        ui.switch(
+                            colname,
+                            value=True,
+                            on_change=lambda e, variant_type=variant_type, column=column: (
+                                GENERAL_STATE[
+                                    f"csq_table_{variant_type}"
+                                ].run_grid_method(
+                                    "setColumnsVisible",
+                                    [column["field"]],
+                                    e.value,
+                                )
+                            ),
+                        )
 
     with ui.footer(elevated=True, fixed=False):
         ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
