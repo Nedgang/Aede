@@ -18,17 +18,17 @@ def run_variant_search() -> None:
     """
     answer = requests.get("http://localhost:8000/query/v1/variants/", params=REQUEST)
     if answer.ok:
-        for variant in answer.json()[0]:
-            GENERAL_STATE[f"result_request_{variant}"] = pl.from_dicts(
-                answer.json()[0][variant]
+        for variant_type in answer.json()[0]:
+            GENERAL_STATE[f"result_request_{variant_type}"] = pl.from_dicts(
+                answer.json()[0][variant_type]
             )
-            GENERAL_STATE[f"result_table_{variant}"].options["rowData"].clear()
-            GENERAL_STATE[f"result_table_{variant}"].options["rowData"].extend(
-                GENERAL_STATE[f"result_request_{variant}"]
+            GENERAL_STATE[f"result_table_{variant_type}"].options["rowData"].clear()
+            GENERAL_STATE[f"result_table_{variant_type}"].options["rowData"].extend(
+                GENERAL_STATE[f"result_request_{variant_type}"]
                 .select(
                     pl.col(
                         ["variant_key"]
-                        + list(GENERAL_STATE[f"details_variant_{variant}"].keys())
+                        + list(GENERAL_STATE[f"details_variant_{variant_type}"].keys())
                     )
                 )
                 .unique()
@@ -83,11 +83,6 @@ async def output_selected_row(variant_type) -> None:
                 for row in GENERAL_STATE[f"details_table_{variant_type}"].rows
             ]
         )
-        GENERAL_STATE[f"select_{variant_type}_features"].set_options(
-            selected_row["csq_Feature"].split(",")
-            if selected_row["csq_Feature"] is not None
-            else []
-        )
     else:
         GENERAL_STATE[f"selected_{variant_type}_variant"] = False
         GENERAL_STATE[f"details_variant_{variant_type}"] = {
@@ -102,7 +97,6 @@ async def output_selected_row(variant_type) -> None:
                 for row in GENERAL_STATE[f"details_table_{variant_type}"].rows
             ]
         )
-        GENERAL_STATE[f"select_{variant_type}_features"].set_options([])
         GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].clear()
 
 
@@ -157,7 +151,6 @@ def clear_results(variants: list(str)):
                 for row in GENERAL_STATE[f"details_table_{variant_type}"].rows
             ]
         )
-        GENERAL_STATE[f"select_{variant_type}_features"].set_options([])
         GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].clear()
 
 
