@@ -83,6 +83,12 @@ async def output_selected_row(variant_type) -> None:
                 for row in GENERAL_STATE[f"details_table_{variant_type}"].rows
             ]
         )
+        GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].clear()
+        GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].extend(
+            GENERAL_STATE[f"result_request_{variant_type}"]
+            .filter(pl.col("variant_key") == selected_row["variant_key"])
+            .to_dicts()
+        )
     else:
         GENERAL_STATE[f"selected_{variant_type}_variant"] = False
         GENERAL_STATE[f"details_variant_{variant_type}"] = {
