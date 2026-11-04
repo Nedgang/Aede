@@ -28,19 +28,19 @@ def run_variant_search() -> None:
         ui.notify(ans.json()["detail"], type="negative", position="center")
 
 
-def run_csq_search(request) -> None:
-    """
-    Send request for CSQ information based on chr, variant_type, variant_key and feature
-    to database and update the aggrid.
-    """
-    ans = requests.get("http://localhost:8000/query/v1/csq", params=request)
-    if ans.ok:
-        GENERAL_STATE[f"csq_table_{request['variant_type']}"].options["rowData"].clear()
-        GENERAL_STATE[f"csq_table_{request['variant_type']}"].options["rowData"].extend(
-            ans.json()
-        )
-    else:
-        ui.notify(ans.json()["detail"], type="negative", position="center")
+# def run_csq_search(request) -> None:
+#     """
+#     Send request for CSQ information based on chr, variant_type, variant_key and feature
+#     to database and update the aggrid.
+#     """
+#     ans = requests.get("http://localhost:8000/query/v1/csq", params=request)
+#     if ans.ok:
+#         GENERAL_STATE[f"csq_table_{request['variant_type']}"].options["rowData"].clear()
+#         GENERAL_STATE[f"csq_table_{request['variant_type']}"].options["rowData"].extend(
+#             ans.json()
+#         )
+#     else:
+#         ui.notify(ans.json()["detail"], type="negative", position="center")
 
 
 def reset_request() -> dict:
@@ -224,6 +224,7 @@ GENERAL_STATE = {
 }
 for variant_type in all_variants_type:
     GENERAL_STATE.setdefault("result_table_" + variant_type, None)
+    GENERAL_STATE.setdefault("results_request_" + variant_type, None)
     GENERAL_STATE.setdefault("csq_table_" + variant_type, None)
     GENERAL_STATE.setdefault(
         "details_variant_" + variant_type,
@@ -808,25 +809,25 @@ def search_page():
                         )
                         .classes("w-full")
                     )
-                    with ui.row().classes("w-full"):
-                        ui.button("Search").bind_enabled_from(
-                            GENERAL_STATE, f"selected_{variant_type}_variant"
-                        ).on_click(
-                            lambda variant_type=variant_type: run_csq_search(
-                                {
-                                    "variant_type": variant_type,
-                                    "chr": GENERAL_STATE[
-                                        f"details_variant_{variant_type}"
-                                    ]["chrom"],
-                                    "variant_key": GENERAL_STATE[
-                                        f"details_variant_{variant_type}"
-                                    ]["variant_key"],
-                                    "features": GENERAL_STATE[
-                                        f"selected_{variant_type}_features"
-                                    ],
-                                }
-                            )
-                        )
+                    # with ui.row().classes("w-full"):
+                    #     ui.button("Search").bind_enabled_from(
+                    #         GENERAL_STATE, f"selected_{variant_type}_variant"
+                    #     ).on_click(
+                    #         lambda variant_type=variant_type: run_csq_search(
+                    #             {
+                    #                 "variant_type": variant_type,
+                    #                 "chr": GENERAL_STATE[
+                    #                     f"details_variant_{variant_type}"
+                    #                 ]["chrom"],
+                    #                 "variant_key": GENERAL_STATE[
+                    #                     f"details_variant_{variant_type}"
+                    #                 ]["variant_key"],
+                    #                 "features": GENERAL_STATE[
+                    #                     f"selected_{variant_type}_features"
+                    #                 ],
+                    #             }
+                    #         )
+                    #     )
                 with ui.card().classes("w-75/100 h-105"):
                     with ui.row():
                         ui.label(f"CSQ on {variant_type}").classes("text-h5")
