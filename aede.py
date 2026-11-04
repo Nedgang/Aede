@@ -1,7 +1,6 @@
 ##########
 # IMPORT #
 ##########
-import glob
 import os
 
 import polars as pl
