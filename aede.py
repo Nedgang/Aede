@@ -785,46 +785,7 @@ def search_page():
                 .classes("w-full")
                 .bind_visibility_from(GENERAL_STATE, f"display_{variant_type}_csq")
             ):
-                with ui.card().classes("w-23/100 h-105"):
-                    ui.label(
-                        f"csq_Feature affected from {variant_type} variant"
-                    ).classes("text-h5")
-                    ui.switch("Display variants panel", value=True).bind_value(
-                        GENERAL_STATE, f"display_{variant_type}_variants"
-                    )
-                    GENERAL_STATE[f"select_{variant_type}_features"] = (
-                        ui.select(
-                            label="Select a feature",
-                            options=[],
-                            multiple=True,
-                            clearable=True,
-                            with_input=True,
-                        )
-                        .bind_value_to(
-                            GENERAL_STATE, f"selected_{variant_type}_features"
-                        )
-                        .classes("w-full")
-                    )
-                    # with ui.row().classes("w-full"):
-                    #     ui.button("Search").bind_enabled_from(
-                    #         GENERAL_STATE, f"selected_{variant_type}_variant"
-                    #     ).on_click(
-                    #         lambda variant_type=variant_type: run_csq_search(
-                    #             {
-                    #                 "variant_type": variant_type,
-                    #                 "chr": GENERAL_STATE[
-                    #                     f"details_variant_{variant_type}"
-                    #                 ]["chrom"],
-                    #                 "variant_key": GENERAL_STATE[
-                    #                     f"details_variant_{variant_type}"
-                    #                 ]["variant_key"],
-                    #                 "features": GENERAL_STATE[
-                    #                     f"selected_{variant_type}_features"
-                    #                 ],
-                    #             }
-                    #         )
-                    #     )
-                with ui.card().classes("w-75/100 h-105"):
+                with ui.card().classes("w-99/100 h-105"):
                     with ui.row():
                         ui.label(f"CSQ on {variant_type}").classes("text-h5")
                         col_select = ui.button(icon="menu")
