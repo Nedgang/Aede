@@ -20,13 +20,13 @@ def run_variant_search() -> None:
     ans = requests.get("http://localhost:8000/query/v1/variants/", params=REQUEST)
     if ans.ok:
         for variant in ans.json()[0]:
-            GENERAL_STATE["result_table_" + variant].options["rowData"].clear()
-            GENERAL_STATE["result_table_" + variant].options["rowData"].extend(
+            GENERAL_STATE[f"result_table_{variant}"].options["rowData"].clear()
+            GENERAL_STATE[f"result_table_{variant}"].options["rowData"].extend(
                 ans.json()[0][variant]
             )
         ui.notify("Results received!")
     else:
-        ui.notify(ans.json()["detail"], type="negative")
+        ui.notify(ans.json()["detail"], type="negative", position="center")
 
 
 def run_csq_search(request) -> None:
@@ -41,7 +41,7 @@ def run_csq_search(request) -> None:
             ans.json()
         )
     else:
-        ui.notify(ans.json()["detail"], type="negative")
+        ui.notify(ans.json()["detail"], type="negative", position="center")
 
 
 def reset_request() -> dict:
@@ -65,44 +65,33 @@ def reset_request() -> dict:
     }
 
 
-async def output_selected_row(variant_type):
+async def output_selected_row(variant_type) -> None:
     """
     Update details in display depending on the selected variant in result table.
     """
-    row = await GENERAL_STATE[f"result_table_{variant_type}"].get_selected_row()
-    if row:
+    selected_row = await GENERAL_STATE[
+        f"result_table_{variant_type}"
+    ].get_selected_row()
+    if selected_row:
         GENERAL_STATE[f"selected_{variant_type}_variant"] = True
-        GENERAL_STATE[f"details_variant_{variant_type}"] = row
+        GENERAL_STATE[f"details_variant_{variant_type}"] = selected_row
         GENERAL_STATE[f"details_table_{variant_type}"].update_rows(
             [
                 {
-                    "pop": "All",
-                    "AC": row["AC"],
-                    "AN": row["AN"],
-                    "AF": row["AF"],
-                },
-                {
-                    "pop": "XY",
-                    "AC": row["AC_XY"],
-                    "AN": row["AN_XY"],
-                    "AF": row["AF_XY"],
-                },
-                {
-                    "pop": "XX",
-                    "AC": row["AC_XX"],
-                    "AN": row["AN_XX"],
-                    "AF": row["AF_XX"],
-                },
-                {
-                    "pop": "grpmax",
-                    "AC": row["AC_grpmax"],
-                    "AN": row["AN_grpmax"],
-                    "AF": row["AF_grpmax"],
-                },
+                    key: row[key]
+                    if key == "pop"
+                    else selected_row[key]
+                    if row["pop"] == "All"
+                    else selected_row[f"{key}_{row['pop']}"]
+                    for key in row
+                }
+                for row in GENERAL_STATE[f"details_table_{variant_type}"].rows
             ]
         )
         GENERAL_STATE[f"select_{variant_type}_features"].set_options(
-            row["Feature"].split(",") if row["Feature"] is not None else []
+            selected_row["Feature"].split(",")
+            if selected_row["Feature"] is not None
+            else []
         )
     else:
         GENERAL_STATE[f"selected_{variant_type}_variant"] = False
@@ -114,39 +103,65 @@ async def output_selected_row(variant_type):
         }
         GENERAL_STATE[f"details_table_{variant_type}"].update_rows(
             [
-                {
-                    "pop": "All",
-                    "AC": "",
-                    "AN": "",
-                    "AF": "",
-                },
-                {
-                    "pop": "XY",
-                    "AC": "",
-                    "AN": "",
-                    "AF": "",
-                },
-                {
-                    "pop": "XX",
-                    "AC": "",
-                    "AN": "",
-                    "AF": "",
-                },
-                {
-                    "pop": "grpmax",
-                    "AC": "",
-                    "AN": "",
-                    "AF": "",
-                },
+                {key: row[key] if key == "pop" else "" for key in row}
+                for row in GENERAL_STATE[f"details_table_{variant_type}"].rows
             ]
         )
         GENERAL_STATE[f"select_{variant_type}_features"].set_options([])
         GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].clear()
 
 
-def harmonize_chrom_options() -> None:
-    if REQUEST["id"] == "" and REQUEST["feature"] == [] and REQUEST["gene"] is None:
-        GENERAL_STATE["chromosomes_option"] = chromosomes
+def harmonize_chrom_options(
+    select_chr,
+    request: dict,
+    base_chr: list,
+    link_feature_chrom: pl.LazyFrame,
+    link_id_chrom: pl.LazyFrame,
+) -> None:
+    if request["id"] == "" and request["feature"] == [] and request["gene"] is None:
+        select_chr.set_options(base_chr, value=base_chr[0])
+    else:
+        if request["id"] != "":
+            select_chr.set_options(
+                link_id_chrom.filter(pl.col("id") == request["id"])
+                .collect()["chrom"]
+                .to_list(),
+                value=select_chr.options[0],
+            )
+        elif request["feature"] != []:
+            select_chr.set_options(
+                link_feature_chrom.filter(pl.col("Feature").is_in(request["feature"]))
+                .collect()["chrom"]
+                .to_list(),
+                value=select_chr.options[0],
+            )
+        else:
+            select_chr.set_options(
+                link_feature_chrom.filter(pl.col("SYMBOL") == request["gene"])
+                .collect()["chrom"]
+                .to_list(),
+                value=select_chr.options[0],
+            )
+
+
+def clear_results(variants: list(str)):
+    for variant_type in variants:
+        GENERAL_STATE["result_table_" + variant_type].options["rowData"].clear()
+        GENERAL_STATE[f"selected_{variant_type}_variant"] = False
+        GENERAL_STATE[f"details_variant_{variant_type}"] = {
+            col: ""
+            for col in list(details_label_column.values())
+            + list(frequencies_label_column.values())
+            + list(gnomAD_label_column.values())
+        }
+        GENERAL_STATE[f"details_table_{variant_type}"].update_rows(
+            [
+                {key: row[key] if key == "pop" else "" for key in row}
+                for row in GENERAL_STATE[f"details_table_{variant_type}"].rows
+            ]
+        )
+        GENERAL_STATE[f"select_{variant_type}_features"].set_options([])
+        GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].clear()
 
 
 ####################
@@ -221,7 +236,6 @@ for variant_type in all_variants_type:
     GENERAL_STATE.setdefault(f"display_{variant_type}_csq", False)
     GENERAL_STATE.setdefault(f"display_{variant_type}_variants", True)
     GENERAL_STATE.setdefault(f"selected_{variant_type}_variant", False)
-GENERAL_STATE.setdefault("chromosomes_option", chromosomes)
 
 
 ########
@@ -231,11 +245,13 @@ GENERAL_STATE.setdefault("chromosomes_option", chromosomes)
 def search_page():
     # PAGE & WIDGETS DESCRIPTION
     left_drawer = ui.left_drawer(bordered=True, elevated=True)
-    with ui.header(elevated=True).classes():
-        ui.image("logo/RF-Inserm_Simplifie_rvb_Blanc.png").classes("w-64")
-        ui.label("onlinePOPGEN").classes("text-h3")
-        ui.button(icon="wysiwyg", on_click=lambda: left_drawer.toggle())
-        ui.switch("Dark mode").bind_value(ui.dark_mode())
+    with ui.header(elevated=True).classes("items-center justify-between"):
+        with ui.row():
+            ui.image("logo/logo_temporaire.png").classes("w-130")
+            ui.button(icon="wysiwyg", on_click=lambda: left_drawer.toggle()).tooltip(
+                "Request formulary"
+            )
+        ui.switch("Dark mode").bind_value(ui.dark_mode()).props("color=white")
 
     with left_drawer, ui.column().classes("w-full"):
         ui.label("Request").classes("text-h5")
@@ -254,7 +270,7 @@ def search_page():
         # Gene search
         select_gene = (
             ui.select(
-                label="Gene",
+                label="Gene symbol",
                 options=link_feature_chrom.select("SYMBOL")
                 .collect()
                 .to_series()
@@ -265,31 +281,25 @@ def search_page():
                 clearable=True,
             )
             .bind_value(REQUEST, "gene")
+            .tooltip(
+                """You can search variant which impact a gene symbol. Choosing one lead to
+                limitation to the chromosome choice.\n
+                Options will be limited to the possible chromosomes choice: you won't be
+                able to select a gene on chr13 if you selected another parameter which set
+                chr to only 18."""
+            )
             .classes("w-full")
         )
         # ID search
         variant_id = (
-            ui.input(
-                label="Variant ID",
-                validation={
-                    "Not in DB": lambda v: (
-                        len(
-                            link_id_chrom.filter(
-                                pl.col("chrom").is_in(
-                                    GENERAL_STATE["chromosomes_option"]
-                                )
-                            )
-                            .filter(pl.col("id") == v)
-                            .collect()
-                        )
-                        > 0
-                        or v == ""
-                    )
-                },
-            )
+            ui.input(label="Variant ID")
             .bind_value(REQUEST, "id")
+            .tooltip("""It will be automaticly checked if it is present in the database at
+                the available chromosome, and limit chrom choice if it's the case.
+                Ex: it won't validate a variant on chr21 if other parameters (gene,
+                feature, etc...) limit choice to chr18.""")
             .classes("w-full")
-        )
+        ).props("debounce=500")
         # Feature
         select_features = (
             ui.select(
@@ -305,11 +315,12 @@ def search_page():
                 clearable=True,
             )
             .bind_value(REQUEST, "feature")
+            .tooltip("""Ensemble stable ID of Feature, which can be Transcript,
+                     RegulatoryFeature, MotifFeature. Options will be limited to the
+                     possible choice of chromosome.
+                     Selecting one will also affect the available choice of chromosome.""")
             .classes("w-full")
         )
-        # select_features.on_value_change(
-        #     lambda s=select_features: s.set_options(s.value + ["test"])
-        # )
         # Variant impact
         with open("../Mneme/Impact.txt", "r") as file:
             ui.select(
@@ -335,6 +346,10 @@ def search_page():
                 options=chromosomes,
             )
             .bind_value(REQUEST, "chr")
+            .tooltip(
+                """Only one at a time, options affected by choice made on gene, variant
+                and feature."""
+            )
             .classes("w-1/2")
         )
         # Selection start
@@ -374,12 +389,16 @@ def search_page():
             ui.button(
                 "Reset",
                 color="red",
-                on_click=lambda: REQUEST.update(reset_request()),
+                on_click=lambda: (
+                    REQUEST.update(reset_request()),
+                    clear_results(all_variants_type),
+                ),
             )
             ui.space()
             ui.button(
                 "Search",
-                on_click=lambda left_drawer=left_drawer: (
+                on_click=lambda: (
+                    clear_results(all_variants_type),
                     run_variant_search(),
                     ui.notify("Request sent to the API"),
                 ),
@@ -410,33 +429,35 @@ def search_page():
             gnomad_region_switch.set_value(True) if pass_gnomad_switch.value else None,
         ),
     )
-    # Check if variant id exist, and alter chromosome choice if winning
+    # Check if variant id exist in those chr options, and alter chromosome choice if winning
+    variant_id.validation = {
+        "Not in DB": lambda v: (
+            len(
+                link_id_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .filter(pl.col("id") == v)
+                .collect()
+            )
+            > 0
+            or v == ""
+        )
+    }
     variant_id.on(
         "blur",
-        lambda v=variant_id: (
+        lambda v=variant_id, base_chr=chromosomes, request=REQUEST: (
             (
                 (
-                    select_chr.set_value(
-                        link_id_chrom.filter(pl.col("id") == v.value).collect()[
-                            "chrom"
-                        ][0]
+                    select_chr.set_options(
+                        [
+                            link_id_chrom.filter(pl.col("id") == v.value).collect()[
+                                "chrom"
+                            ][0]
+                        ]
                     ),
-                    GENERAL_STATE.update(
-                        {
-                            "chromosomes_option": [
-                                link_id_chrom.filter(pl.col("id") == v.value).collect()[
-                                    "chrom"
-                                ][0]
-                            ]
-                        }
-                    ),
-                    select_chr.set_options(GENERAL_STATE["chromosomes_option"]),
+                    select_chr.set_value(select_chr.options[0]),
                 )
                 if v.value != ""
-                else harmonize_chrom_options(),
-                select_chr.set_options(
-                    GENERAL_STATE["chromosomes_option"],
-                    value=GENERAL_STATE["chromosomes_option"][0],
+                else harmonize_chrom_options(
+                    select_chr, request, base_chr, link_feature_chrom, link_id_chrom
                 ),
             )
             if not v.error
@@ -444,19 +465,112 @@ def search_page():
                 ui.notify(
                     f"{v.value} not in POPGEN database for the request available chromosomes.",
                     type="warning",
+                    position="center",
                 ),
                 variant_id.set_value(""),
-            )
+                harmonize_chrom_options(
+                    select_chr, request, base_chr, link_feature_chrom, link_id_chrom
+                ),
+            ),
+            select_features.set_options(
+                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .collect()["Feature"]
+                .unique()
+                .sort()
+                .to_list()
+            ),
+            select_gene.set_options(
+                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .collect()["SYMBOL"]
+                .unique()
+                .sort()
+                .to_list()
+            ),
         ),
     )
-    # select_gene.on_value_change(
-    #     lambda c, select_chr=select_chr: (
-    #         select_chr.set_value(gene_to_chrom[c.value])
-    #         if c.value is not None
-    #         else None,
-    #         select_chr.disable() if c.value is not None else select_chr.enable(),
-    #     ),
-    # )
+    # Impact of selecting gene on chromosomes choice, and features options
+    select_gene.on_value_change(
+        lambda g, base_chr=chromosomes: (
+            (
+                (
+                    select_chr.set_options(
+                        sorted(
+                            link_feature_chrom.filter(pl.col("SYMBOL") == g.value)
+                            .collect()["chrom"]
+                            .unique()
+                            .to_list(),
+                            key=lambda c: int(c.split("chr")[-1]),
+                        ),
+                    ),
+                    select_chr.set_value(select_chr.options[0]),
+                    ui.notify(
+                        "Multiple chr possible for this selected gene",
+                        type="warning",
+                        position="center",
+                    )
+                    if len(select_chr.options) > 1
+                    else None,
+                )
+                if g.value is not None
+                and REQUEST["id"] == ""
+                and REQUEST["feature"] == []
+                else harmonize_chrom_options(
+                    select_chr, REQUEST, base_chr, link_feature_chrom, link_id_chrom
+                )
+            ),
+            select_features.set_options(
+                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .collect()["Feature"]
+                .unique()
+                .sort()
+                .to_list()
+            ),
+            select_gene.set_options(
+                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .collect()["SYMBOL"]
+                .unique()
+                .sort()
+                .to_list()
+            ),
+        )
+    )
+    # Impact of selecting gene on chromosomes choice, and genes options
+    select_features.on_value_change(
+        lambda f, base_chr=chromosomes, request=REQUEST: (
+            (
+                (
+                    select_chr.set_options(
+                        sorted(
+                            link_feature_chrom.filter(pl.col("Feature").is_in(f.value))
+                            .collect()["chrom"]
+                            .unique()
+                            .to_list(),
+                            key=lambda c: int(c.split("chr")[-1]),
+                        ),
+                    ),
+                    select_chr.set_value(select_chr.options[0]),
+                )
+                if f.value != []
+                else harmonize_chrom_options(
+                    select_chr, request, base_chr, link_feature_chrom, link_id_chrom
+                )
+            ),
+            select_features.set_options(
+                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .collect()["Feature"]
+                .unique()
+                .sort()
+                .to_list()
+            ),
+            select_gene.set_options(
+                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+                .collect()["SYMBOL"]
+                .unique()
+                .sort()
+                .to_list()
+            ),
+        )
+    )
     # Start can't be higher than Stop
     start_value.on(
         "change",
@@ -469,6 +583,9 @@ def search_page():
                 else None
             )
         ),
+    ).on(
+        "blur",
+        lambda: start_value.set_value(0) if start_value.value is None else None,
     )
     stop_value.on(
         "change",
@@ -480,6 +597,17 @@ def search_page():
                 if stop_value.value < start_value.value
                 else None
             )
+        ),
+    ).on(
+        "blur",
+        lambda: (
+            (
+                stop_value.set_value(0)
+                if start_value.value == 0
+                else stop_value.set_value(start_value.value)
+            )
+            if stop_value.value is None
+            else None
         ),
     )
 
@@ -501,12 +629,32 @@ def search_page():
                         ui.aggrid(
                             {
                                 "columnDefs": [
-                                    {"field": "chrom"},
-                                    {"field": "pos", "filter": "agNumberColumnFilter"},
-                                    {"field": "id", "filter": "agTextColumnFilter"},
-                                    {"field": "ref", "filter": "agTextColumnFilter"},
-                                    {"field": "alt", "filter": "agTextColumnFilter"},
-                                    {"field": "filter", "filter": "agTextColumnFilter"},
+                                    {"headerName": "CHROM", "field": "chrom"},
+                                    {
+                                        "headerName": "POS",
+                                        "field": "pos",
+                                        "filter": "agNumberColumnFilter",
+                                    },
+                                    {
+                                        "headerName": "ID",
+                                        "field": "id",
+                                        "filter": "agTextColumnFilter",
+                                    },
+                                    {
+                                        "headerName": "REF",
+                                        "field": "ref",
+                                        "filter": "agTextColumnFilter",
+                                    },
+                                    {
+                                        "headerName": "ALT",
+                                        "field": "alt",
+                                        "filter": "agTextColumnFilter",
+                                    },
+                                    {
+                                        "headerName": "FILTER",
+                                        "field": "filter",
+                                        "filter": "agTextColumnFilter",
+                                    },
                                     {"field": "AC", "filter": "agNumberColumnFilter"},
                                     {"field": "AN", "filter": "agNumberColumnFilter"},
                                     {"field": "AF", "filter": "agNumberColumnFilter"},
@@ -582,27 +730,22 @@ def search_page():
                             GENERAL_STATE[f"details_table_{variant_type}"] = ui.table(
                                 columns=[
                                     {
-                                        "name": "pop_type",
-                                        "label": "",
                                         "field": "pop",
                                         "align": "center",
                                     },
                                     {
-                                        "name": "AC",
                                         "label": "AC",
                                         "field": "AC",
                                         "align": "center",
                                         "sortable": True,
                                     },
                                     {
-                                        "name": "AN",
                                         "label": "AN",
                                         "field": "AN",
                                         "align": "center",
                                         "sortable": True,
                                     },
                                     {
-                                        "name": "AF",
                                         "label": "AF",
                                         "field": "AF",
                                         "align": "center",
@@ -655,6 +798,7 @@ def search_page():
                             options=[],
                             multiple=True,
                             clearable=True,
+                            with_input=True,
                         )
                         .bind_value_to(
                             GENERAL_STATE, f"selected_{variant_type}_features"
