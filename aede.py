@@ -88,8 +88,8 @@ async def output_selected_row(variant_type) -> None:
             ]
         )
         GENERAL_STATE[f"select_{variant_type}_features"].set_options(
-            selected_row["Feature"].split(",")
-            if selected_row["Feature"] is not None
+            selected_row["csq_Feature"].split(",")
+            if selected_row["csq_Feature"] is not None
             else []
         )
     else:
@@ -129,14 +129,16 @@ def harmonize_chrom_options(
             )
         elif request["feature"] != []:
             select_chr.set_options(
-                link_feature_chrom.filter(pl.col("Feature").is_in(request["feature"]))
+                link_feature_chrom.filter(
+                    pl.col("csq_Feature").is_in(request["feature"])
+                )
                 .collect()["chrom"]
                 .to_list(),
                 value=select_chr.options[0],
             )
         else:
             select_chr.set_options(
-                link_feature_chrom.filter(pl.col("SYMBOL") == request["gene"])
+                link_feature_chrom.filter(pl.col("csq_SYMBOL") == request["gene"])
                 .collect()["chrom"]
                 .to_list(),
                 value=select_chr.options[0],
@@ -179,7 +181,7 @@ with open("../Mneme/chromosomes.txt") as file:
     chromosomes = [chr.strip() for chr in file]
     file.close()
 link_feature_chrom = pl.scan_parquet("../Mneme/feature_index.parquet")
-link_id_chrom = pl.scan_parquet("../Mneme/id_index.parquet").select(["id", "chrom"])
+link_id_chrom = pl.scan_parquet("../Mneme/id_index.parquet")
 
 REQUEST = reset_request()
 
@@ -270,7 +272,7 @@ def search_page():
         select_gene = (
             ui.select(
                 label="Gene symbol",
-                options=link_feature_chrom.select("SYMBOL")
+                options=link_feature_chrom.select("csq_SYMBOL")
                 .collect()
                 .to_series()
                 .unique()
@@ -299,11 +301,11 @@ def search_page():
                 feature, etc...) limit choice to chr18.""")
             .classes("w-full")
         ).props("debounce=500")
-        # Feature
+        # csq_Feature
         select_features = (
             ui.select(
-                label="Feature ID",
-                options=link_feature_chrom.select("Feature")
+                label="csq_Feature ID",
+                options=link_feature_chrom.select("csq_Feature")
                 .collect()
                 .to_series()
                 .unique()
@@ -315,7 +317,7 @@ def search_page():
             )
             .bind_value(REQUEST, "feature")
             .tooltip("""Ensemble stable ID of Feature, which can be Transcript,
-                     RegulatoryFeature, MotifFeature. Options will be limited to the
+                     Regulatory_Feature, Motif_Feature. Options will be limited to the
                      possible choice of chromosome.
                      Selecting one will also affect the available choice of chromosome.""")
             .classes("w-full")
@@ -473,14 +475,14 @@ def search_page():
             ),
             select_features.set_options(
                 link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
-                .collect()["Feature"]
+                .collect()["csq_Feature"]
                 .unique()
                 .sort()
                 .to_list()
             ),
             select_gene.set_options(
                 link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
-                .collect()["SYMBOL"]
+                .collect()["csq_SYMBOL"]
                 .unique()
                 .sort()
                 .to_list()
@@ -494,7 +496,7 @@ def search_page():
                 (
                     select_chr.set_options(
                         sorted(
-                            link_feature_chrom.filter(pl.col("SYMBOL") == g.value)
+                            link_feature_chrom.filter(pl.col("csq_SYMBOL") == g.value)
                             .collect()["chrom"]
                             .unique()
                             .to_list(),
@@ -519,14 +521,14 @@ def search_page():
             ),
             select_features.set_options(
                 link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
-                .collect()["Feature"]
+                .collect()["csq_Feature"]
                 .unique()
                 .sort()
                 .to_list()
             ),
             select_gene.set_options(
                 link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
-                .collect()["SYMBOL"]
+                .collect()["csq_SYMBOL"]
                 .unique()
                 .sort()
                 .to_list()
@@ -540,7 +542,9 @@ def search_page():
                 (
                     select_chr.set_options(
                         sorted(
-                            link_feature_chrom.filter(pl.col("Feature").is_in(f.value))
+                            link_feature_chrom.filter(
+                                pl.col("csq_Feature").is_in(f.value)
+                            )
                             .collect()["chrom"]
                             .unique()
                             .to_list(),
@@ -556,14 +560,14 @@ def search_page():
             ),
             select_features.set_options(
                 link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
-                .collect()["Feature"]
+                .collect()["csq_Feature"]
                 .unique()
                 .sort()
                 .to_list()
             ),
             select_gene.set_options(
                 link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
-                .collect()["SYMBOL"]
+                .collect()["csq_SYMBOL"]
                 .unique()
                 .sort()
                 .to_list()
@@ -785,9 +789,9 @@ def search_page():
                 .bind_visibility_from(GENERAL_STATE, f"display_{variant_type}_csq")
             ):
                 with ui.card().classes("w-23/100 h-105"):
-                    ui.label(f"Feature affected from {variant_type} variant").classes(
-                        "text-h5"
-                    )
+                    ui.label(
+                        f"csq_Feature affected from {variant_type} variant"
+                    ).classes("text-h5")
                     ui.switch("Display variants panel", value=True).bind_value(
                         GENERAL_STATE, f"display_{variant_type}_variants"
                     )
@@ -835,13 +839,16 @@ def search_page():
                                     "filter": "agTextColumnFilter",
                                 },
                                 {"field": "IMPACT", "filter": "agTextColumnFilter"},
-                                {"field": "SYMBOL", "filter": "agTextColumnFilter"},
+                                {"field": "csq_SYMBOL", "filter": "agTextColumnFilter"},
                                 {"field": "Gene", "filter": "agTextColumnFilter"},
                                 {
-                                    "field": "Feature_type",
+                                    "field": "csq_Feature_type",
                                     "filter": "agTextColumnFilter",
                                 },
-                                {"field": "Feature", "filter": "agTextColumnFilter"},
+                                {
+                                    "field": "csq_Feature",
+                                    "filter": "agTextColumnFilter",
+                                },
                                 {"field": "BIOTYPE", "filter": "agTextColumnFilter"},
                                 {"field": "EXON", "filter": "agTextColumnFilter"},
                                 {"field": "INTRON", "filter": "agTextColumnFilter"},
