@@ -792,32 +792,65 @@ def search_page():
                     {
                         "columnDefs": [
                             {
-                                "field": "Consequence",
+                                "headerName": "Consequence",
+                                "field": "csq_Consequence",
                                 "filter": "agTextColumnFilter",
                             },
-                            {"field": "IMPACT", "filter": "agTextColumnFilter"},
-                            {"field": "csq_SYMBOL", "filter": "agTextColumnFilter"},
-                            {"field": "Gene", "filter": "agTextColumnFilter"},
                             {
+                                "headerName": "Impact",
+                                "field": "csq_IMPACT",
+                                "filter": "agTextColumnFilter",
+                            },
+                            {
+                                "headerName": "Symbol",
+                                "field": "csq_SYMBOL",
+                                "filter": "agTextColumnFilter",
+                            },
+                            {
+                                "headerName": "Gene",
+                                "field": "csq_Gene",
+                                "filter": "agTextColumnFilter",
+                            },
+                            {
+                                "headerName": "Feature_type",
                                 "field": "csq_Feature_type",
                                 "filter": "agTextColumnFilter",
                             },
                             {
+                                "headerName": "Feature",
                                 "field": "csq_Feature",
                                 "filter": "agTextColumnFilter",
                             },
-                            {"field": "BIOTYPE", "filter": "agTextColumnFilter"},
-                            {"field": "EXON", "filter": "agTextColumnFilter"},
-                            {"field": "INTRON", "filter": "agTextColumnFilter"},
                             {
-                                "field": "CDS_position",
+                                "headerName": "Biotype",
+                                "field": "csq_BIOTYPE",
                                 "filter": "agTextColumnFilter",
                             },
                             {
-                                "field": "Amino_acids",
+                                "headerName": "Exon",
+                                "field": "csq_EXON",
                                 "filter": "agTextColumnFilter",
                             },
-                            {"field": "Codons", "filter": "agTextColumnFilter"},
+                            {
+                                "headerName": "Intron",
+                                "field": "csq_INTRON",
+                                "filter": "agTextColumnFilter",
+                            },
+                            {
+                                "headerName": "CDS position",
+                                "field": "csq_CDS_position",
+                                "filter": "agTextColumnFilter",
+                            },
+                            {
+                                "headerName": "Amino acids",
+                                "field": "csq_Amino_acids",
+                                "filter": "agTextColumnFilter",
+                            },
+                            {
+                                "headerName": "Codons",
+                                "field": "csq_Codons",
+                                "filter": "agTextColumnFilter",
+                            },
                         ],
                         "rowData": [],
                         "rowSelection": {"mode": "None"},
