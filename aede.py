@@ -161,21 +161,9 @@ all_variants_type = sorted(
         if dir.is_dir() and "_index.parquet" not in dir.name
     ]
 )
-chromosomes = sorted(
-    {
-        auto
-        for auto in {chr.split("/")[-1] for chr in glob.iglob("../Mneme/*/chr*")}
-        if auto.split("chr")[-1].isdigit()
-    },
-    key=lambda c: int(c.split("chr")[-1]),
-) + sorted(
-    {
-        gono
-        for gono in {chr.split("/")[-1] for chr in glob.iglob("../Mneme/*/chr*")}
-        if not gono.split("chr")[-1].isdigit()
-    },
-    key=lambda c: c.split("chr")[-1],
-)
+with open("../Mneme/chromosomes.txt") as file:
+    chromosomes = [chr.strip() for chr in file]
+    file.close()
 link_feature_chrom = pl.scan_parquet("../Mneme/feature_index.parquet")
 link_id_chrom = pl.scan_parquet("../Mneme/id_index.parquet").select(["id", "chrom"])
 
