@@ -245,9 +245,10 @@ def search_page():
     with ui.header(elevated=True).classes("items-center justify-between"):
         with ui.row():
             ui.image("logo/logo_temporaire.png").classes("w-130")
-            ui.button(icon="wysiwyg", on_click=lambda: left_drawer.toggle()).tooltip(
-                "Request formulary"
-            )
+            ui.button(
+                icon="wysiwyg",
+                on_click=lambda: left_drawer.toggle(),
+            ).tooltip("Request formulary")
         ui.switch("Dark mode").bind_value(ui.dark_mode()).props("color=white")
 
     with left_drawer, ui.column().classes("w-full"):
