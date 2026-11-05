@@ -788,6 +788,9 @@ def search_page():
                 with ui.row():
                     ui.label(f"CSQ on {variant_type}").classes("text-h5")
                     col_select = ui.button(icon="menu")
+                    ui.switch("Variant selection", value=True).bind_value_to(
+                        GENERAL_STATE, f"display_{variant_type}_variants"
+                    )
                 GENERAL_STATE[f"csq_table_{variant_type}"] = ui.aggrid(
                     {
                         "columnDefs": [
