@@ -188,6 +188,7 @@ details_label_column = {
     "Alternative": "alt",
     "Filter": "filter",
     "DP": "DP",
+    "Variant type": "variant_type",
 }
 
 frequencies_label_column = {
@@ -664,6 +665,10 @@ def search_page():
                                     },
                                     {"field": "inGnomad"},
                                     {"field": "passGnomad"},
+                                    {
+                                        "field": "variant_type",
+                                        "filter": "agTextColumnFilter",
+                                    },
                                 ],
                                 "rowData": [],
                                 "rowSelection": {"mode": "singleRow"},
