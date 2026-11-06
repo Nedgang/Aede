@@ -18,23 +18,29 @@ def run_variant_search() -> None:
     """
     answer = requests.get("http://localhost:8000/query/v1/variants/", params=REQUEST)
     if answer.ok:
-        for variant_type in answer.json()[0]:
-            GENERAL_STATE[f"result_request_{variant_type}"] = pl.from_dicts(
-                answer.json()[0][variant_type]
-            )
-            GENERAL_STATE[f"result_table_{variant_type}"].options["rowData"].clear()
-            GENERAL_STATE[f"result_table_{variant_type}"].options["rowData"].extend(
-                GENERAL_STATE[f"result_request_{variant_type}"]
-                .select(
-                    pl.col(
-                        ["variant_key"]
-                        + list(GENERAL_STATE[f"details_variant_{variant_type}"].keys())
-                    )
-                )
-                .unique()
-                .to_dicts()
-            )
         ui.notify("Results received!")
+        for variant_type in answer.json()[0]:
+            if answer.json()[0][variant_type] != []:
+                GENERAL_STATE[f"result_request_{variant_type}"] = pl.from_dicts(
+                    answer.json()[0][variant_type]
+                )
+                GENERAL_STATE[f"result_table_{variant_type}"].options["rowData"].clear()
+                GENERAL_STATE[f"result_table_{variant_type}"].options["rowData"].extend(
+                    GENERAL_STATE[f"result_request_{variant_type}"]
+                    .select(
+                        pl.col(
+                            ["variant_key"]
+                            + list(
+                                GENERAL_STATE[f"details_variant_{variant_type}"].keys()
+                            )
+                        )
+                    )
+                    .unique()
+                    .to_dicts()
+                )
+            else:
+                GENERAL_STATE[f"result_request_{variant_type}"] = pl.DataFrame()
+                ui.notify("No variants found for your request.")
     else:
         ui.notify(answer.json()["detail"], type="negative", position="center")
 
