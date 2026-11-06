@@ -167,6 +167,7 @@ def clear_results(variants: list(str)):
             ]
         )
         GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].clear()
+        GENERAL_STATE[f"display_{variant_type}_csq"] = False
 
 
 ####################
