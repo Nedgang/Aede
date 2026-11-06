@@ -503,7 +503,7 @@ def search_page():
                     ),
                     select_chr.set_value(select_chr.options[0]),
                     ui.notify(
-                        "Multiple chr possible for this selected gene",
+                        "Multiple chr possible for this selected gene, please select one",
                         type="warning",
                         position="center",
                     )
