@@ -19,10 +19,10 @@ def run_variant_search() -> None:
     answer = requests.get("http://localhost:8000/query/v1/variants/", params=REQUEST)
     if answer.ok:
         ui.notify("Results received!")
-        for variant_type in answer.json()[0]:
-            if answer.json()[0][variant_type] != []:
+        for variant_type in answer.json():
+            if answer.json()[variant_type]["results"] != []:
                 GENERAL_STATE[f"result_request_{variant_type}"] = pl.from_dicts(
-                    answer.json()[0][variant_type]
+                    answer.json()[variant_type]["results"]
                 )
                 GENERAL_STATE[f"result_table_{variant_type}"].options["rowData"].clear()
                 GENERAL_STATE[f"result_table_{variant_type}"].options["rowData"].extend(
@@ -41,7 +41,17 @@ def run_variant_search() -> None:
                 )
             else:
                 GENERAL_STATE[f"result_request_{variant_type}"] = pl.DataFrame()
-                ui.notify("No variants found for your request.")
+                ui.notify(
+                    "No variants found using those parameters",
+                    type="warning",
+                    position="center",
+                )
+            if answer.json()[variant_type]["warning"]:
+                ui.notify(
+                    answer.json()[variant_type]["message"],
+                    type="warning",
+                    position="center",
+                )
     else:
         ui.notify(answer.json()["detail"], type="negative", position="center")
 
