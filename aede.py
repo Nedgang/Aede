@@ -302,7 +302,7 @@ def search_page():
         # csq_Feature
         select_features = (
             ui.select(
-                label="csq_Feature ID",
+                label="Feature ID",
                 options=link_feature_chrom.select("csq_Feature")
                 .collect()
                 .to_series()
