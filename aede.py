@@ -95,6 +95,7 @@ async def output_selected_row(variant_type) -> None:
             .filter(pl.col("variant_key") == selected_row["variant_key"])
             .to_dicts()
         )
+        GENERAL_STATE[f"display_{variant_type}_csq"] = True
     else:
         GENERAL_STATE[f"selected_{variant_type}_variant"] = False
         GENERAL_STATE[f"details_variant_{variant_type}"] = {
@@ -110,6 +111,7 @@ async def output_selected_row(variant_type) -> None:
             ]
         )
         GENERAL_STATE[f"csq_table_{variant_type}"].options["rowData"].clear()
+        GENERAL_STATE[f"display_{variant_type}_csq"] = False
 
 
 def harmonize_chrom_options(
@@ -237,8 +239,8 @@ for variant_type in all_variants_type:
             + list(gnomAD_label_column.values())
         },
     )
-    GENERAL_STATE.setdefault(f"display_{variant_type}_csq", False)
     GENERAL_STATE.setdefault(f"display_{variant_type}_variants", True)
+    GENERAL_STATE.setdefault(f"display_{variant_type}_csq", False)
     GENERAL_STATE.setdefault(f"selected_{variant_type}_variant", False)
 
 
@@ -622,106 +624,109 @@ def search_page():
         # Variants result row
         with ui.row().classes("w-full").bind_visibility(GENERAL_STATE, variant_type):
             with (
-                ui.row()
-                .classes("w-full")
-                .bind_visibility(GENERAL_STATE, f"display_{variant_type}_variants")
+                (
+                    ui.row()
+                    .classes("w-full")
+                    .bind_visibility(GENERAL_STATE, f"display_{variant_type}_variants")
+                ),
+                ui.card().classes("w-99/100 h-105"),
             ):
-                with (
-                    ui.card().classes("w-75/100 h-105"),
-                ):
-                    with ui.row():
-                        ui.label(variant_type).classes("text-h5")
-                        col_select = ui.button(icon="menu")
-                    GENERAL_STATE[f"result_table_{variant_type}"] = (
-                        ui.aggrid(
-                            {
-                                "columnDefs": [
-                                    {"headerName": "CHROM", "field": "chrom"},
-                                    {
-                                        "headerName": "POS",
-                                        "field": "pos",
-                                        "filter": "agNumberColumnFilter",
-                                    },
-                                    {
-                                        "headerName": "ID",
-                                        "field": "id",
-                                        "filter": "agTextColumnFilter",
-                                    },
-                                    {
-                                        "headerName": "REF",
-                                        "field": "ref",
-                                        "filter": "agTextColumnFilter",
-                                    },
-                                    {
-                                        "headerName": "ALT",
-                                        "field": "alt",
-                                        "filter": "agTextColumnFilter",
-                                    },
-                                    {
-                                        "headerName": "FILTER",
-                                        "field": "filter",
-                                        "filter": "agTextColumnFilter",
-                                    },
-                                    {"field": "AC", "filter": "agNumberColumnFilter"},
-                                    {"field": "AN", "filter": "agNumberColumnFilter"},
-                                    {"field": "AF", "filter": "agNumberColumnFilter"},
-                                    {
-                                        "field": "AC_Hom",
-                                        "filter": "agNumberColumnFilter",
-                                    },
-                                    {"field": "inGnomad"},
-                                    {"field": "passGnomad"},
-                                    {
-                                        "field": "variant_type",
-                                        "filter": "agTextColumnFilter",
-                                    },
-                                ],
-                                "rowData": [],
-                                "rowSelection": {"mode": "singleRow"},
-                            },
-                            theme="balham",
-                            auto_size_columns=True,
+                with ui.row():
+                    ui.label(variant_type).classes("text-h5")
+                    col_select = ui.button(icon="menu")
+                GENERAL_STATE[f"result_table_{variant_type}"] = (
+                    ui.aggrid(
+                        {
+                            "columnDefs": [
+                                {"headerName": "CHROM", "field": "chrom"},
+                                {
+                                    "headerName": "POS",
+                                    "field": "pos",
+                                    "filter": "agNumberColumnFilter",
+                                },
+                                {
+                                    "headerName": "ID",
+                                    "field": "id",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "REF",
+                                    "field": "ref",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "ALT",
+                                    "field": "alt",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "FILTER",
+                                    "field": "filter",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {"field": "AC", "filter": "agNumberColumnFilter"},
+                                {"field": "AN", "filter": "agNumberColumnFilter"},
+                                {"field": "AF", "filter": "agNumberColumnFilter"},
+                                {
+                                    "field": "AC_Hom",
+                                    "filter": "agNumberColumnFilter",
+                                },
+                                {"field": "inGnomad"},
+                                {"field": "passGnomad"},
+                                {
+                                    "field": "variant_type",
+                                    "filter": "agTextColumnFilter",
+                                },
+                            ],
+                            "rowData": [],
+                            "rowSelection": {"mode": "singleRow"},
+                        },
+                        theme="balham",
+                        auto_size_columns=True,
+                    )
+                    .on(
+                        "rowSelected",
+                        lambda _, variant_type=variant_type: output_selected_row(
+                            variant_type
+                        ),
+                    )
+                    .classes("w-full h-9/10")
+                )
+                # Allowing columns selection
+                with col_select, ui.menu(), ui.column().classes("'gap-0 p-2'"):
+                    for column in [
+                        i
+                        for i in GENERAL_STATE[f"result_table_{variant_type}"].options[
+                            "columnDefs"
+                        ]
+                    ]:
+                        colname = (
+                            column["field"]
+                            if "headerName" not in column
+                            else column["headerName"]
                         )
-                        .on(
-                            "rowSelected",
-                            lambda _, variant_type=variant_type: output_selected_row(
-                                variant_type
+                        ui.switch(
+                            colname,
+                            value=True,
+                            on_change=lambda e, variant_type=variant_type, column=column: (
+                                GENERAL_STATE[
+                                    f"result_table_{variant_type}"
+                                ].run_grid_method(
+                                    "setColumnsVisible",
+                                    [column["field"]],
+                                    e.value,
+                                )
                             ),
                         )
-                        .classes("w-full h-9/10")
-                    )
-                    # Allowing columns selection
-                    with col_select, ui.menu(), ui.column().classes("'gap-0 p-2'"):
-                        for column in [
-                            i
-                            for i in GENERAL_STATE[
-                                f"result_table_{variant_type}"
-                            ].options["columnDefs"]
-                        ]:
-                            colname = (
-                                column["field"]
-                                if "headerName" not in column
-                                else column["headerName"]
-                            )
-                            ui.switch(
-                                colname,
-                                value=True,
-                                on_change=lambda e, variant_type=variant_type, column=column: (
-                                    GENERAL_STATE[
-                                        f"result_table_{variant_type}"
-                                    ].run_grid_method(
-                                        "setColumnsVisible",
-                                        [column["field"]],
-                                        e.value,
-                                    )
-                                ),
-                            )
+            # CSQ result row
+            with (
+                ui.row()
+                .classes("w-full")
+                .bind_visibility_from(GENERAL_STATE, f"display_{variant_type}_csq"),
+            ):
                 with ui.card().classes("w-23/100 h-105"):
                     with ui.row().classes("w-full"):
                         ui.label(f"Details on {variant_type}").classes("text-h5")
-                        ui.switch("CSQ").bind_value_to(
-                            GENERAL_STATE, f"display_{variant_type}_csq"
-                        )
                     with ui.tabs().classes("w-full") as tabs:
                         ui.tab("info")
                         ui.tab("freq")
@@ -790,115 +795,109 @@ def search_page():
                                         f"{a[gnomAD_label_column[detail]]}"
                                     ),
                                 )
-            # CSQ result row
-            with (
-                ui.row()
-                .classes("w-full")
-                .bind_visibility_from(GENERAL_STATE, f"display_{variant_type}_csq"),
-                ui.card().classes("w-99/100 h-105"),
-            ):
-                with ui.row():
-                    ui.label(f"CSQ on {variant_type}").classes("text-h5")
-                    col_select = ui.button(icon="menu")
-                    ui.switch("Variant selection", value=True).bind_value_to(
-                        GENERAL_STATE, f"display_{variant_type}_variants"
-                    )
-                GENERAL_STATE[f"csq_table_{variant_type}"] = ui.aggrid(
-                    {
-                        "columnDefs": [
-                            {
-                                "headerName": "Consequence",
-                                "field": "csq_Consequence",
-                                "filter": "agTextColumnFilter",
-                            },
-                            {
-                                "headerName": "Impact",
-                                "field": "csq_IMPACT",
-                                "filter": "agTextColumnFilter",
-                            },
-                            {
-                                "headerName": "Symbol",
-                                "field": "csq_SYMBOL",
-                                "filter": "agTextColumnFilter",
-                            },
-                            {
-                                "headerName": "Gene",
-                                "field": "csq_Gene",
-                                "filter": "agTextColumnFilter",
-                            },
-                            {
-                                "headerName": "Feature_type",
-                                "field": "csq_Feature_type",
-                                "filter": "agTextColumnFilter",
-                            },
-                            {
-                                "headerName": "Feature",
-                                "field": "csq_Feature",
-                                "filter": "agTextColumnFilter",
-                            },
-                            {
-                                "headerName": "Biotype",
-                                "field": "csq_BIOTYPE",
-                                "filter": "agTextColumnFilter",
-                            },
-                            {
-                                "headerName": "Exon",
-                                "field": "csq_EXON",
-                                "filter": "agTextColumnFilter",
-                            },
-                            {
-                                "headerName": "Intron",
-                                "field": "csq_INTRON",
-                                "filter": "agTextColumnFilter",
-                            },
-                            {
-                                "headerName": "CDS position",
-                                "field": "csq_CDS_position",
-                                "filter": "agTextColumnFilter",
-                            },
-                            {
-                                "headerName": "Amino acids",
-                                "field": "csq_Amino_acids",
-                                "filter": "agTextColumnFilter",
-                            },
-                            {
-                                "headerName": "Codons",
-                                "field": "csq_Codons",
-                                "filter": "agTextColumnFilter",
-                            },
-                        ],
-                        "rowData": [],
-                        "rowSelection": {"mode": "None"},
-                    },
-                    theme="balham",
-                    auto_size_columns=True,
-                ).classes("w-full h-9/10")
-                # Allowing columns selection
-                with col_select, ui.menu(), ui.column().classes("'gap-0 p-2'"):
-                    for column in [
-                        i
-                        for i in GENERAL_STATE[f"csq_table_{variant_type}"].options[
-                            "columnDefs"
-                        ]
-                    ]:
-                        colname = (
-                            column["field"]
-                            if "headerName" not in column
-                            else column["headerName"]
+                with ui.card().classes("w-75/100 h-105"):
+                    with ui.row():
+                        ui.label(f"CSQ on {variant_type}").classes("text-h5")
+                        col_select = ui.button(icon="menu")
+                        ui.switch("Variant selection", value=True).bind_value_to(
+                            GENERAL_STATE, f"display_{variant_type}_variants"
                         )
-                        ui.switch(
-                            colname,
-                            value=True,
-                            on_change=lambda e, variant_type=variant_type, column=column: (
-                                GENERAL_STATE[
-                                    f"csq_table_{variant_type}"
-                                ].run_grid_method(
-                                    "setColumnsVisible",
-                                    [column["field"]],
-                                    e.value,
-                                )
-                            ),
-                        )
+                    GENERAL_STATE[f"csq_table_{variant_type}"] = ui.aggrid(
+                        {
+                            "columnDefs": [
+                                {
+                                    "headerName": "Consequence",
+                                    "field": "csq_Consequence",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "Impact",
+                                    "field": "csq_IMPACT",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "Symbol",
+                                    "field": "csq_SYMBOL",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "Gene",
+                                    "field": "csq_Gene",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "Feature_type",
+                                    "field": "csq_Feature_type",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "Feature",
+                                    "field": "csq_Feature",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "Biotype",
+                                    "field": "csq_BIOTYPE",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "Exon",
+                                    "field": "csq_EXON",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "Intron",
+                                    "field": "csq_INTRON",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "CDS position",
+                                    "field": "csq_CDS_position",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "Amino acids",
+                                    "field": "csq_Amino_acids",
+                                    "filter": "agTextColumnFilter",
+                                },
+                                {
+                                    "headerName": "Codons",
+                                    "field": "csq_Codons",
+                                    "filter": "agTextColumnFilter",
+                                },
+                            ],
+                            "rowData": [],
+                            "rowSelection": {"mode": "None"},
+                        },
+                        theme="balham",
+                        auto_size_columns=True,
+                    ).classes("w-full h-9/10")
+                    # Allowing columns selection
+                    with col_select, ui.menu(), ui.column().classes("'gap-0 p-2'"):
+                        for column in [
+                            i
+                            for i in GENERAL_STATE[f"csq_table_{variant_type}"].options[
+                                "columnDefs"
+                            ]
+                        ]:
+                            colname = (
+                                column["field"]
+                                if "headerName" not in column
+                                else column["headerName"]
+                            )
+                            ui.switch(
+                                colname,
+                                value=True,
+                                on_change=lambda e, variant_type=variant_type, column=column: (
+                                    GENERAL_STATE[
+                                        f"csq_table_{variant_type}"
+                                    ].run_grid_method(
+                                        "setColumnsVisible",
+                                        [column["field"]],
+                                        e.value,
+                                    )
+                                ),
+                            )
 
     with ui.footer(elevated=True, fixed=False):
         ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
