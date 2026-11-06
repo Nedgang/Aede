@@ -346,31 +346,32 @@ def search_page():
                 multiple=True,
                 clearable=True,
             ).bind_value(REQUEST, "csq").classes("w-full")
-        # Chromosome choice
-        select_chr = (
-            ui.select(
-                label="Chromosome",
-                options=chromosomes,
+        with ui.row():
+            # Chromosome choice
+            select_chr = (
+                ui.select(
+                    label="Chromosome",
+                    options=chromosomes,
+                )
+                .bind_value(REQUEST, "chr")
+                .tooltip(
+                    """Only one at a time, options affected by choice made on gene, variant
+                    and feature."""
+                )
+                .classes("w-2/7")
             )
-            .bind_value(REQUEST, "chr")
-            .tooltip(
-                """Only one at a time, options affected by choice made on gene, variant
-                and feature."""
+            # Selection start
+            start_value = (
+                ui.number(label="Start", min=0, value=REQUEST["start"], precision=0)
+                .bind_value(REQUEST, "start")
+                .classes("w-2/7")
             )
-            .classes("w-1/2")
-        )
-        # Selection start
-        start_value = (
-            ui.number(label="Start", min=0, value=REQUEST["start"], precision=0)
-            .bind_value(REQUEST, "start")
-            .classes("w-1/2")
-        )
-        # Selection stop
-        stop_value = (
-            ui.number(label="End", min=0, value=REQUEST["stop"], precision=0)
-            .bind_value(REQUEST, "stop")
-            .classes("w-1/2")
-        )
+            # Selection stop
+            stop_value = (
+                ui.number(label="End", min=0, value=REQUEST["stop"], precision=0)
+                .bind_value(REQUEST, "stop")
+                .classes("w-2/7")
+            )
         # Quality selection
         ui.switch("PASS variants only", value=REQUEST["only_pass"]).bind_value_to(
             REQUEST, "only_pass"
