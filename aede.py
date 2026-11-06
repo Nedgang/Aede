@@ -22,7 +22,7 @@ def run_variant_search() -> None:
         for variant_type in answer.json():
             if answer.json()[variant_type]["results"] != []:
                 GENERAL_STATE[f"result_request_{variant_type}"] = pl.from_dicts(
-                    answer.json()[variant_type]["results"]
+                    answer.json()[variant_type]["results"], infer_schema_length=None
                 )
                 GENERAL_STATE[f"result_table_{variant_type}"].options["rowData"].clear()
                 GENERAL_STATE[f"result_table_{variant_type}"].options["rowData"].extend(
