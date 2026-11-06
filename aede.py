@@ -36,6 +36,7 @@ def run_variant_search() -> None:
                         )
                     )
                     .unique()
+                    .sort("pos")
                     .to_dicts()
                 )
             else:
