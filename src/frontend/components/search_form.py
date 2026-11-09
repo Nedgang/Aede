@@ -8,14 +8,31 @@ from nicegui import ui
 # HEADER #
 ##########
 class Search_form(ui.left_drawer):
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self,
+        variants_type,
+        chromosomes_list,
+        impact_list,
+        consequence_list,
+        lf_id_chrom,
+        lf_feature_chrom_symbol,
+        *args,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
+        self.all_variants_type = variants_type
+        self.chromosomes_list = chromosomes_list
+        self.impact_list = impact_list
+        self.consequence_list = consequence_list
+        self.lf_id_chrom = lf_id_chrom
+        self.lf_feature_chrom_symbol = lf_feature_chrom_symbol
+
         # Widgets creation
         with self, ui.column().classes("w-full"):
             ui.label("Request").classes("text-h5")
             # Variant type selection
             self.variant_type = ui.select(
-                options=[],
+                options=variants_type,
                 label="Variant type",
                 multiple=True,
                 validation=lambda value: (
@@ -25,7 +42,10 @@ class Search_form(ui.left_drawer):
             # Gene search
             self.gene = (
                 ui.select(
-                    label="Gene symbol", options=[], with_input=True, clearable=True
+                    label="Gene symbol",
+                    options=[],
+                    with_input=True,
+                    clearable=True,
                 )
                 .tooltip(
                     """You can search variant which impact a gene symbol. Choosing one
@@ -38,7 +58,9 @@ class Search_form(ui.left_drawer):
             )
             # ID search
             self.variant_id = (
-                ui.input(label="Variant ID")
+                ui.input(
+                    label="Variant ID",
+                )
                 .tooltip("""It will be automaticly checked if it is present in the
                          database at the available chromosome, and limit chrom choice if
                          it's the case. Ex: it won't validate a variant on chr21 if other
@@ -64,7 +86,7 @@ class Search_form(ui.left_drawer):
             # Variant impact
             self.impact = ui.select(
                 label="Variant impacts",
-                options=[],
+                options=impact_list,
                 with_input=True,
                 multiple=True,
                 clearable=True,
@@ -72,7 +94,7 @@ class Search_form(ui.left_drawer):
             # Consequence selection
             self.consequences = ui.select(
                 label="Variant consequences",
-                options=[],
+                options=consequence_list,
                 with_input=True,
                 multiple=True,
                 clearable=True,
@@ -157,3 +179,27 @@ class Search_form(ui.left_drawer):
                 self.clear = ui.button("Clear", color="red")
                 ui.space()
                 self.search = ui.button("Search")
+
+            self.initialize_options()
+
+    def initialize_options(self):
+        """
+        Set base options from db data for gene, feature, chromosome.
+        """
+        self.gene.set_options(
+            self.lf_feature_chrom_symbol.select("csq_SYMBOL")
+            .unique()
+            .sort("csq_SYMBOL")
+            .collect()
+            .to_series()
+            .to_list(),
+        )
+        self.features.set_options(
+            options=self.lf_feature_chrom_symbol.select("csq_Feature")
+            .unique()
+            .sort("csq_Feature")
+            .collect()
+            .to_series()
+            .to_list(),
+        )
+        self.chrom.set_options(self.chromosomes_list)

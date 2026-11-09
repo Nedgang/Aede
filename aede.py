@@ -264,43 +264,33 @@ for variant_type in all_variants_type:
 ########
 @ui.page("/")
 def search_page():
+    with open("../Mneme/Impact.txt", "r") as file:
+        impact_list = [impact.strip() for impact in file]
+    with open("../Mneme/consequences.txt", "r") as file:
+        csq_list = [csq.strip() for csq in file]
     # Initialize header and search form
     header = Header(elevated=True)
-    search_form = Search_form(bordered=True, elevated=True)
+    search_form = Search_form(
+        variants_type=all_variants_type,
+        chromosomes_list=chromosomes,
+        impact_list=impact_list,
+        consequence_list=csq_list,
+        lf_feature_chrom_symbol=link_feature_chrom,
+        lf_id_chrom=link_id_chrom,
+        bordered=True,
+        elevated=True,
+    )
     # Link search form toggle to the button in the header
     header.search_form_button.on_click(lambda: search_form.toggle())
 
-    # Link options from auxiliary files to the widgets in the search form, and value from
-    # widgets to the REQUEST formulary
-    search_form.variant_type.set_options(options=all_variants_type).bind_value(
-        REQUEST, "variant_type"
-    )
-    search_form.gene.set_options(
-        link_feature_chrom.select("csq_SYMBOL")
-        .unique()
-        .sort("csq_SYMBOL")
-        .collect()
-        .to_series()
-        .to_list()
-    ).bind_value(REQUEST, "gene")
+    # Link value from widgets to the REQUEST formulary
+    search_form.variant_type.bind_value(REQUEST, "variant_type")
+    search_form.gene.bind_value(REQUEST, "gene")
     search_form.variant_id.bind_value(REQUEST, "id")
-    search_form.features.set_options(
-        link_feature_chrom.select("csq_Feature")
-        .unique()
-        .sort("csq_Feature")
-        .collect()
-        .to_series()
-        .to_list()
-    ).bind_value(REQUEST, "feature")
-    with open("../Mneme/Impact.txt", "r") as file:
-        search_form.impact.set_options([impact for impact in file]).bind_value(
-            REQUEST, "impact"
-        )
-    with open("../Mneme/consequences.txt", "r") as file:
-        search_form.consequences.set_options([csq for csq in file]).bind_value(
-            REQUEST, "csq"
-        )
-    search_form.chrom.set_options(chromosomes).bind_value(REQUEST, "chr")
+    search_form.features.bind_value(REQUEST, "feature")
+    search_form.impact.bind_value(REQUEST, "impact")
+    search_form.consequences.bind_value(REQUEST, "csq")
+    search_form.chrom.bind_value(REQUEST, "chr")
     search_form.start.bind_value(REQUEST, "start")
     search_form.stop.bind_value(REQUEST, "stop")
     search_form.only_pass.bind_value(REQUEST, "only_pass")
