@@ -7,6 +7,8 @@ import polars as pl
 import requests
 from nicegui import ui
 
+from src.frontend.components.header import Header
+
 
 #############
 # FUNCTIONS #
@@ -263,14 +265,8 @@ for variant_type in all_variants_type:
 def search_page():
     # PAGE & WIDGETS DESCRIPTION
     left_drawer = ui.left_drawer(bordered=True, elevated=True)
-    with ui.header(elevated=True).classes("items-center justify-between"):
-        with ui.row():
-            ui.image("logo/logo_temporaire.png").classes("w-130")
-            ui.button(
-                icon="wysiwyg",
-                on_click=lambda: left_drawer.toggle(),
-            ).tooltip("Request formulary")
-        ui.switch("Dark mode").bind_value(ui.dark_mode()).props("color=white")
+    header = Header(elevated=True)
+    header.formulary_button.on_click(lambda: left_drawer.toggle())
 
     with left_drawer, ui.column().classes("w-full"):
         ui.label("Request").classes("text-h5")
