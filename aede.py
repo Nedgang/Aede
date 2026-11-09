@@ -418,9 +418,9 @@ def search_page():
             ui.button(
                 "Search",
                 on_click=lambda: (
+                    ui.notify("Request sent to the API"),
                     clear_results(all_variants_type),
                     run_variant_search(),
-                    ui.notify("Request sent to the API"),
                 ),
             )
     # WIDGETS INTERACTIONS
