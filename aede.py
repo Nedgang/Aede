@@ -8,6 +8,7 @@ import requests
 from nicegui import ui
 
 from src.frontend.components.header import Header
+from src.frontend.components.search_form import Search_form
 
 
 #############
@@ -263,371 +264,217 @@ for variant_type in all_variants_type:
 ########
 @ui.page("/")
 def search_page():
-    # PAGE & WIDGETS DESCRIPTION
-    left_drawer = ui.left_drawer(bordered=True, elevated=True)
+    # Initialize header and search form
     header = Header(elevated=True)
-    header.formulary_button.on_click(lambda: left_drawer.toggle())
+    search_form = Search_form(bordered=True, elevated=True)
+    # Link search form toggle to the button in the header
+    header.search_form_button.on_click(lambda: search_form.toggle())
 
-    with left_drawer, ui.column().classes("w-full"):
-        ui.label("Request").classes("text-h5")
-        # Variant type selection
-        ui.select(
-            options=(all_variants_type),
-            label="Variant type",
-            multiple=True,
-            on_change=lambda: GENERAL_STATE.update(
-                {var: var in REQUEST["variant_type"] for var in all_variants_type},
-            ),
-            validation=lambda b: (
-                "Must select at least one variant type" if b == [] else None
-            ),
-        ).bind_value(REQUEST, "variant_type").classes("w-full")
-        # Gene search
-        select_gene = (
-            ui.select(
-                label="Gene symbol",
-                options=link_feature_chrom.select("csq_SYMBOL")
-                .collect()
-                .to_series()
-                .unique()
-                .sort()
-                .to_list(),
-                with_input=True,
-                clearable=True,
-            )
-            .bind_value(REQUEST, "gene")
-            .tooltip(
-                """You can search variant which impact a gene symbol. Choosing one lead to
-                limitation to the chromosome choice.\n
-                Options will be limited to the possible chromosomes choice: you won't be
-                able to select a gene on chr13 if you selected another parameter which set
-                chr to only 18."""
-            )
-            .classes("w-full")
+    # Link options from auxiliary files to the widgets in the search form, and value from
+    # widgets to the REQUEST formulary
+    search_form.variant_type.set_options(options=all_variants_type).bind_value(
+        REQUEST, "variant_type"
+    )
+    search_form.gene.set_options(
+        link_feature_chrom.select("csq_SYMBOL")
+        .unique()
+        .sort("csq_SYMBOL")
+        .collect()
+        .to_series()
+        .to_list()
+    ).bind_value(REQUEST, "gene")
+    search_form.variant_id.bind_value(REQUEST, "id")
+    search_form.features.set_options(
+        link_feature_chrom.select("csq_Feature")
+        .unique()
+        .sort("csq_Feature")
+        .collect()
+        .to_series()
+        .to_list()
+    ).bind_value(REQUEST, "feature")
+    with open("../Mneme/Impact.txt", "r") as file:
+        search_form.impact.set_options([impact for impact in file]).bind_value(
+            REQUEST, "impact"
         )
-        # ID search
-        variant_id = (
-            ui.input(label="Variant ID")
-            .bind_value(REQUEST, "id")
-            .tooltip("""It will be automaticly checked if it is present in the database at
-                the available chromosome, and limit chrom choice if it's the case.
-                Ex: it won't validate a variant on chr21 if other parameters (gene,
-                feature, etc...) limit choice to chr18.""")
-            .classes("w-full")
-        ).props("debounce=500")
-        # csq_Feature
-        select_features = (
-            ui.select(
-                label="Feature ID",
-                options=link_feature_chrom.select("csq_Feature")
-                .collect()
-                .to_series()
-                .unique()
-                .sort()
-                .to_list(),
-                with_input=True,
-                multiple=True,
-                clearable=True,
-            )
-            .bind_value(REQUEST, "feature")
-            .tooltip("""Ensemble stable ID of Feature, which can be Transcript,
-                     Regulatory_Feature, Motif_Feature. Options will be limited to the
-                     possible choice of chromosome.
-                     Selecting one will also affect the available choice of chromosome.""")
-            .classes("w-full")
+    with open("../Mneme/consequences.txt", "r") as file:
+        search_form.consequences.set_options([csq for csq in file]).bind_value(
+            REQUEST, "csq"
         )
-        # Variant impact
-        with open("../Mneme/Impact.txt", "r") as file:
-            ui.select(
-                label="Variant impact",
-                options=[impact for impact in file],
-                with_input=True,
-                multiple=True,
-                clearable=True,
-            ).bind_value(REQUEST, "impact").classes("w-full")
-        # Consequence selection
-        with open("../Mneme/consequences.txt", "r") as file:
-            ui.select(
-                label="Variant consequence",
-                options=[csq for csq in file],
-                with_input=True,
-                multiple=True,
-                clearable=True,
-            ).bind_value(REQUEST, "csq").classes("w-full")
-        with ui.row():
-            # Chromosome choice
-            select_chr = (
-                ui.select(
-                    label="Chromosome",
-                    options=chromosomes,
-                )
-                .bind_value(REQUEST, "chr")
-                .tooltip(
-                    """Only one at a time, options affected by choice made on gene, variant
-                    and feature."""
-                )
-                .classes("w-2/7")
-            )
-            # Selection start
-            start_value = (
-                ui.number(label="Start", min=0, value=REQUEST["start"], precision=0)
-                .bind_value(REQUEST, "start")
-                .classes("w-2/7")
-            )
-            # Selection stop
-            stop_value = (
-                ui.number(label="End", min=0, value=REQUEST["stop"], precision=0)
-                .bind_value(REQUEST, "stop")
-                .classes("w-2/7")
-            )
-        # Quality selection
-        ui.switch("PASS variants only", value=REQUEST["only_pass"]).bind_value_to(
-            REQUEST, "only_pass"
-        )
-        # gnomAD covered region
-        gnomad_region_switch = ui.switch(
-            "gnomAD covered regions only",
-            value=REQUEST["gnomad_regions"],
-        ).bind_value(REQUEST, "gnomad_regions")
-        # in_gnomAD
-        in_gnomad_switch = ui.switch(
-            "Variant in gnomAD",
-            value=REQUEST["in_gnomad"],
-        ).bind_value(REQUEST, "in_gnomad")
-        # pass_gnomAD
-        pass_gnomad_switch = ui.switch(
-            "Variant pass in gnomAD",
-            value=REQUEST["pass_gnomad"],
-        ).bind_value(REQUEST, "pass_gnomad")
+    search_form.chrom.set_options(chromosomes).bind_value(REQUEST, "chr")
+    search_form.start.bind_value(REQUEST, "start")
+    search_form.stop.bind_value(REQUEST, "stop")
+    search_form.only_pass.bind_value(REQUEST, "only_pass")
+    search_form.gnomad_regions.bind_value(REQUEST, "gnomad_regions")
+    search_form.in_gnomad.bind_value(REQUEST, "in_gnomad")
+    search_form.pass_gnomad.bind_value(REQUEST, "pass_gnomad")
 
-        ui.separator()
-        with ui.row().classes("w-full"):
-            ui.button(
-                "Reset",
-                color="red",
-                on_click=lambda: (
-                    REQUEST.update(reset_request()),
-                    clear_results(all_variants_type),
-                ),
-            )
-            ui.space()
-            ui.button(
-                "Search",
-                on_click=lambda: (
-                    ui.notify("Request sent to the API"),
-                    clear_results(all_variants_type),
-                    run_variant_search(),
-                ),
-            )
-    # WIDGETS INTERACTIONS
-    # Switchs interactions with one another
-    gnomad_region_switch.on(
-        "click",
-        lambda: (
-            in_gnomad_switch.set_value(False),
-            pass_gnomad_switch.set_value(False)
-            if not gnomad_region_switch.value
-            else None,
-        ),
+    # Link an effect to search form buttons
+    search_form.clear.on_click(
+        lambda: (REQUEST.update(reset_request()), clear_results(all_variants_type))
     )
-    in_gnomad_switch.on(
-        "click",
+    search_form.search.on_click(
         lambda: (
-            pass_gnomad_switch.set_value(False)
-            if not in_gnomad_switch.value
-            else gnomad_region_switch.set_value(True)
-        ),
+            ui.notify("Request sent to the API"),
+            clear_results(all_variants_type),
+            run_variant_search(),
+        )
     )
-    pass_gnomad_switch.on(
-        "click",
-        lambda: (
-            in_gnomad_switch.set_value(True),
-            gnomad_region_switch.set_value(True) if pass_gnomad_switch.value else None,
-        ),
-    )
-    # Check if variant id exist in those chr options, and alter chromosome choice if winning
-    variant_id.validation = {
+
+    # Check if variant id exist in those chr options, and alter chromosome choice if ok
+    search_form.variant_id.validation = {
         "Not in DB": lambda v: (
-            len(
-                link_id_chrom.filter(pl.col("chrom").is_in(select_chr.options))
-                .filter(pl.col("id") == v)
-                .collect()
-            )
-            > 0
+            not link_id_chrom.filter(pl.col("chrom").is_in(search_form.chrom.options))
+            .filter(pl.col("id") == v)
+            .collect()
+            .is_empty()
             or v == ""
         )
     }
-    variant_id.on(
-        "blur",
-        lambda v=variant_id, base_chr=chromosomes, request=REQUEST: (
-            (
+    (
+        search_form.variant_id.on(
+            "blur",
+            lambda variant_id=search_form.variant_id, chromosomes=chromosomes: (
                 (
-                    select_chr.set_options(
+                    search_form.chrom.set_options(
                         [
-                            link_id_chrom.filter(pl.col("id") == v.value).collect()[
-                                "chrom"
-                            ][0]
+                            link_id_chrom.filter(
+                                pl.col("id") == variant_id.value
+                            ).collect()["chrom"][0]
                         ]
+                    ).set_value(search_form.chrom.options[0])
+                    if variant_id.value != ""
+                    else harmonize_chrom_options(
+                        search_form.chrom,
+                        REQUEST,
+                        chromosomes,
+                        link_feature_chrom,
+                        link_id_chrom,
                     ),
-                    select_chr.set_value(select_chr.options[0]),
+                    search_form.features.set_options(
+                        link_feature_chrom.filter(
+                            pl.col("chrom").is_in(search_form.chrom.options)
+                        )
+                        .collect()["csq_Feature"]
+                        .unique()
+                        .sort()
+                        .to_list()
+                    ),
+                    search_form.gene.set_options(
+                        link_feature_chrom.filter(
+                            pl.col("chrom").is_in(search_form.chrom.options)
+                        )
+                        .collect()["csq_SYMBOL"]
+                        .unique()
+                        .sort()
+                        .to_list()
+                    ),
                 )
-                if v.value != ""
-                else harmonize_chrom_options(
-                    select_chr, request, base_chr, link_feature_chrom, link_id_chrom
-                ),
-            )
-            if not v.error
-            else (
-                ui.notify(
-                    f"{v.value} not in POPGEN database for the request available chromosomes.",
-                    type="warning",
-                    position="center",
-                ),
-                variant_id.set_value(""),
-                harmonize_chrom_options(
-                    select_chr, request, base_chr, link_feature_chrom, link_id_chrom
-                ),
-            ),
-            select_features.set_options(
-                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
-                .collect()["csq_Feature"]
-                .unique()
-                .sort()
-                .to_list()
-            ),
-            select_gene.set_options(
-                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
-                .collect()["csq_SYMBOL"]
-                .unique()
-                .sort()
-                .to_list()
-            ),
-        ),
-    )
-    # Impact of selecting gene on chromosomes choice, and features options
-    select_gene.on_value_change(
-        lambda g, base_chr=chromosomes: (
-            (
-                (
-                    select_chr.set_options(
-                        sorted(
-                            link_feature_chrom.filter(pl.col("csq_SYMBOL") == g.value)
-                            .collect()["chrom"]
-                            .unique()
-                            .to_list(),
-                            key=lambda c: int(c.split("chr")[-1]),
-                        ),
-                    ),
-                    select_chr.set_value(select_chr.options[0]),
+                if not variant_id.error
+                else (
                     ui.notify(
-                        "Multiple chr possible for this selected gene, please select one",
+                        f"""{variant_id.value} not in POPGEN database for the request
+                        available chromosomes.""",
                         type="warning",
                         position="center",
-                    )
-                    if len(select_chr.options) > 1
-                    else None,
-                )
-                if g.value is not None
-                and REQUEST["id"] == ""
-                and REQUEST["feature"] == []
-                else harmonize_chrom_options(
-                    select_chr, REQUEST, base_chr, link_feature_chrom, link_id_chrom
-                )
-            ),
-            select_features.set_options(
-                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
-                .collect()["csq_Feature"]
-                .unique()
-                .sort()
-                .to_list()
-            ),
-            select_gene.set_options(
-                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
-                .collect()["csq_SYMBOL"]
-                .unique()
-                .sort()
-                .to_list()
-            ),
-        )
-    )
-    # Impact of selecting gene on chromosomes choice, and genes options
-    select_features.on_value_change(
-        lambda f, base_chr=chromosomes, request=REQUEST: (
-            (
-                (
-                    select_chr.set_options(
-                        sorted(
-                            link_feature_chrom.filter(
-                                pl.col("csq_Feature").is_in(f.value)
-                            )
-                            .collect()["chrom"]
-                            .unique()
-                            .to_list(),
-                            key=lambda c: int(c.split("chr")[-1]),
-                        ),
                     ),
-                    select_chr.set_value(select_chr.options[0]),
-                )
-                if f.value != []
-                else harmonize_chrom_options(
-                    select_chr, request, base_chr, link_feature_chrom, link_id_chrom
-                )
+                    variant_id.set_value(""),
+                ),
             ),
-            select_features.set_options(
-                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
-                .collect()["csq_Feature"]
-                .unique()
-                .sort()
-                .to_list()
-            ),
-            select_gene.set_options(
-                link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
-                .collect()["csq_SYMBOL"]
-                .unique()
-                .sort()
-                .to_list()
-            ),
-        )
-    )
-    # Start can't be higher than Stop
-    start_value.on(
-        "change",
-        lambda: (
-            None
-            if stop_value.value is None or start_value.value is None
-            else (
-                stop_value.set_value(start_value.value)
-                if stop_value.value < start_value.value
-                else None
-            )
-        ),
-    ).on(
-        "blur",
-        lambda: start_value.set_value(0) if start_value.value is None else None,
-    )
-    stop_value.on(
-        "change",
-        lambda: (
-            None
-            if stop_value.value is None or start_value.value is None
-            else (
-                start_value.set_value(stop_value.value)
-                if stop_value.value < start_value.value
-                else None
-            )
-        ),
-    ).on(
-        "blur",
-        lambda: (
-            (
-                stop_value.set_value(0)
-                if start_value.value == 0
-                else stop_value.set_value(start_value.value)
-            )
-            if stop_value.value is None
-            else None
         ),
     )
+
+    # Checking link between id/gene/feature on chromosome options, and other widgets
+    # options
+
+    # with left_drawer, ui.column().classes("w-full"):
+    #     with ui.row():
+    # # WIDGETS INTERACTIONS
+    # Check if variant id exist in those chr options, and alter chromosome choice if winning
+    # # Impact of selecting gene on chromosomes choice, and features options
+    # select_gene.on_value_change(
+    #     lambda g, base_chr=chromosomes: (
+    #         (
+    #             (
+    #                 select_chr.set_options(
+    #                     sorted(
+    #                         link_feature_chrom.filter(pl.col("csq_SYMBOL") == g.value)
+    #                         .collect()["chrom"]
+    #                         .unique()
+    #                         .to_list(),
+    #                         key=lambda c: int(c.split("chr")[-1]),
+    #                     ),
+    #                 ),
+    #                 select_chr.set_value(select_chr.options[0]),
+    #                 ui.notify(
+    #                     "Multiple chr possible for this selected gene, please select one",
+    #                     type="warning",
+    #                     position="center",
+    #                 )
+    #                 if len(select_chr.options) > 1
+    #                 else None,
+    #             )
+    #             if g.value is not None
+    #             and REQUEST["id"] == ""
+    #             and REQUEST["feature"] == []
+    #             else harmonize_chrom_options(
+    #                 select_chr, REQUEST, base_chr, link_feature_chrom, link_id_chrom
+    #             )
+    #         ),
+    #         select_features.set_options(
+    #             link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+    #             .collect()["csq_Feature"]
+    #             .unique()
+    #             .sort()
+    #             .to_list()
+    #         ),
+    #         select_gene.set_options(
+    #             link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+    #             .collect()["csq_SYMBOL"]
+    #             .unique()
+    #             .sort()
+    #             .to_list()
+    #         ),
+    #     )
+    # )
+    # # Impact of selecting gene on chromosomes choice, and genes options
+    # select_features.on_value_change(
+    #     lambda f, base_chr=chromosomes, request=REQUEST: (
+    #         (
+    #             (
+    #                 select_chr.set_options(
+    #                     sorted(
+    #                         link_feature_chrom.filter(
+    #                             pl.col("csq_Feature").is_in(f.value)
+    #                         )
+    #                         .collect()["chrom"]
+    #                         .unique()
+    #                         .to_list(),
+    #                         key=lambda c: int(c.split("chr")[-1]),
+    #                     ),
+    #                 ),
+    #                 select_chr.set_value(select_chr.options[0]),
+    #             )
+    #             if f.value != []
+    #             else harmonize_chrom_options(
+    #                 select_chr, request, base_chr, link_feature_chrom, link_id_chrom
+    #             )
+    #         ),
+    #         select_features.set_options(
+    #             link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+    #             .collect()["csq_Feature"]
+    #             .unique()
+    #             .sort()
+    #             .to_list()
+    #         ),
+    #         select_gene.set_options(
+    #             link_feature_chrom.filter(pl.col("chrom").is_in(select_chr.options))
+    #             .collect()["csq_SYMBOL"]
+    #             .unique()
+    #             .sort()
+    #             .to_list()
+    #         ),
+    #     )
+    # )
 
     for variant_type in all_variants_type:
         # Variants result row
