@@ -10,6 +10,7 @@ from nicegui import ui
 from src.frontend.components.footer import Footer
 from src.frontend.components.header import Header
 from src.frontend.components.search_form import Search_form
+from src.frontend.components.variant_results import Variant_results
 
 
 #############
@@ -263,6 +264,12 @@ def search_page():
     search_form.in_gnomad.bind_value(REQUEST, "in_gnomad")
     search_form.pass_gnomad.bind_value(REQUEST, "pass_gnomad")
 
+    # Link variant type selection to general state value for results visibility
+    search_form.variant_type.on_value_change(
+        lambda: GENERAL_STATE.update(
+            {var: var in search_form.variant_type.value for var in all_variants_type}
+        ),
+    )
     # Link an effect to search form buttons
     search_form.clear.on_click(
         lambda: (REQUEST.update(reset_request()), clear_results(all_variants_type))
