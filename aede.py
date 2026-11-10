@@ -250,7 +250,12 @@ def search_page():
     # Link search form toggle to the button in the header
     header.search_form_button.on_click(lambda: search_form.toggle())
     # Link value from widgets to the REQUEST formulary
-    search_form.variant_type.bind_value(REQUEST, "variant_type")
+    # Link variant type selection to general state value for results visibility
+    search_form.variant_type.bind_value(REQUEST, "variant_type").on_value_change(
+        lambda: GENERAL_STATE.update(
+            {var: var in search_form.variant_type.value for var in all_variants_type}
+        ),
+    )
     search_form.gene.bind_value(REQUEST, "gene")
     search_form.variant_id.bind_value(REQUEST, "id")
     search_form.features.bind_value(REQUEST, "feature")
@@ -264,12 +269,6 @@ def search_page():
     search_form.in_gnomad.bind_value(REQUEST, "in_gnomad")
     search_form.pass_gnomad.bind_value(REQUEST, "pass_gnomad")
 
-    # Link variant type selection to general state value for results visibility
-    search_form.variant_type.on_value_change(
-        lambda: GENERAL_STATE.update(
-            {var: var in search_form.variant_type.value for var in all_variants_type}
-        ),
-    )
     # Link an effect to search form buttons
     search_form.clear.on_click(
         lambda: (REQUEST.update(reset_request()), clear_results(all_variants_type))
@@ -283,6 +282,7 @@ def search_page():
     )
 
     for variant_type in all_variants_type:
+        Variant_results().bind_visibility(GENERAL_STATE, variant_type)
         # Variants result row
         with ui.row().classes("w-full").bind_visibility(GENERAL_STATE, variant_type):
             with (
