@@ -5,7 +5,7 @@ from nicegui import ui
 
 
 ##########
-# HEADER #
+# FOOTER #
 ##########
 class Footer(ui.footer):
     def __init__(self, *args, **kwargs):
