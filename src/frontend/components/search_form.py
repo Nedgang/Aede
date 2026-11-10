@@ -56,6 +56,7 @@ class Search_form(ui.left_drawer):
                 )
                 .classes("w-full")
             )
+            self.reset_gene_options()
             # ID search
             self.variant_id = (
                 ui.input(
@@ -83,6 +84,7 @@ class Search_form(ui.left_drawer):
                          chromosome.""")
                 .classes("w-full")
             )
+            self.reset_feature_options()
             # Variant impact
             self.impact = ui.select(
                 label="Variant impacts",
@@ -109,6 +111,7 @@ class Search_form(ui.left_drawer):
                     )
                     .classes("w-2/7")
                 )
+                self.reset_chrom_options()
                 # Selection start
                 self.start = ui.number(label="Start", min=0, precision=0).classes(
                     "w-2/7"
@@ -180,11 +183,9 @@ class Search_form(ui.left_drawer):
                 ui.space()
                 self.search = ui.button("Search")
 
-            self.initialize_options()
-
-    def initialize_options(self):
+    def reset_gene_options(self):
         """
-        Set base options from db data for gene, feature, chromosome.
+        Set base options from db data for gene.
         """
         self.gene.set_options(
             self.lf_feature_chrom_symbol.select("csq_SYMBOL")
@@ -194,6 +195,11 @@ class Search_form(ui.left_drawer):
             .to_series()
             .to_list(),
         )
+
+    def reset_feature_options(self):
+        """
+        Set base options from db data for feature.
+        """
         self.features.set_options(
             options=self.lf_feature_chrom_symbol.select("csq_Feature")
             .unique()
@@ -202,4 +208,9 @@ class Search_form(ui.left_drawer):
             .to_series()
             .to_list(),
         )
+
+    def reset_chrom_options(self):
+        """
+        Set base options from db data for chromosomes.
+        """
         self.chrom.set_options(self.chromosomes_list)
