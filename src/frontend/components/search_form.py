@@ -59,6 +59,9 @@ class Search_form(ui.left_drawer):
                 )
                 .classes("w-full")
             )
+            # When a gene is selected, harmonize options for other genes, chromosome, and
+            # features
+            self.gene.on_value_change(lambda: self.harmonize_chrom_options())
             # ID search
             self.variant_id = (
                 ui.input(
@@ -232,22 +235,21 @@ class Search_form(ui.left_drawer):
         ):
             self.chrom.set_options(options=self.chromosomes_list)
         else:
-            if self.variant_id.value is not None:
+            if self.variant_id.value != "":
                 self.chrom.set_options(
                     self.lf_id_chrom.filter(pl.col("id") == self.variant_id.value)
                     .collect()["chrom"]
+                    .unique()
                     .to_list(),
-                    value=self.chrom.options[0],
                 )
-                self.chrom.set_value(self.chrom.options[0])
-            elif self.features.value is not None:
+            elif self.features.value != []:
                 self.chrom.set_options(
                     self.lf_feature_chrom_symbol.filter(
                         pl.col("csq_Feature").is_in(self.features.value)
                     )
                     .collect()["chrom"]
+                    .unique()
                     .to_list(),
-                    value=self.chrom.options[0],
                 )
             else:
                 self.chrom.set_options(
@@ -255,9 +257,11 @@ class Search_form(ui.left_drawer):
                         pl.col("csq_SYMBOL") == self.gene.value
                     )
                     .collect()["chrom"]
+                    .unique()
+                    .sort()
                     .to_list(),
-                    value=self.chrom.options[0],
                 )
+            self.chrom.set_value(self.chrom.options[0])
 
     def harmonize_gene_options(self) -> None:
         """

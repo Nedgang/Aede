@@ -274,27 +274,6 @@ def search_page():
         )
     )
 
-    # search_form.variant_id.on(
-    #     "blur",
-    #     lambda variant_id=search_form.variant_id, chromosomes=chromosomes: (
-    #         (
-    #             search_form.harmonize_chrom_options(),
-    #             search_form.harmonize_gene_options(),
-    #             search_form.harmonize_features_options(),
-    #         )
-    #         if not variant_id.error
-    #         else (
-    #             ui.notify(
-    #                 f"""{variant_id.value} not in POPGEN database for the request
-    #             available chromosomes.""",
-    #                 type="warning",
-    #                 position="center",
-    #             ),
-    #             variant_id.set_value(""),
-    #         ),
-    #     ),
-    # )
-
     # Checking link between id/gene/feature on chromosome options, and other widgets
     # options
 
