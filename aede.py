@@ -255,8 +255,6 @@ def search_page():
         bordered=True,
         elevated=True,
     )
-    # Link search form toggle to the button in the header
-    header.search_form_button.on_click(lambda: search_form.toggle())
     # Link value from widgets to the REQUEST formulary
     # Link variant type selection to general state value for results visibility
     search_form.variant_type.bind_value(REQUEST, "variant_type").on_value_change(
@@ -289,8 +287,22 @@ def search_page():
         )
     )
 
+    variant_type_results = {
+        variant_type: Variant_results(variant_type).bind_visibility(
+            variant_type_visibility, variant_type
+        )
+        for variant_type in all_variants_type
+    }
+
+    # Link search form toggle to the button in the header
+    header.search_form_button.on_click(
+        lambda: (
+            search_form.toggle(),
+            variant_type_results["SNV-Indel"].refresh(),
+        )
+    )
+
     for variant_type in all_variants_type:
-        Variant_results().bind_visibility(variant_type_visibility, variant_type)
         # Variants result row
         with ui.row().classes("w-full").bind_visibility(GENERAL_STATE, variant_type):
             with (
