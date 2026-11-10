@@ -20,10 +20,7 @@ class Search_form(ui.left_drawer):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
-        self.all_variants_type = variants_type
         self.chromosomes_list = chromosomes_list
-        self.impact_list = impact_list
-        self.consequence_list = consequence_list
         self.lf_id_chrom = lf_id_chrom
         self.lf_feature_chrom_symbol = lf_feature_chrom_symbol
 
