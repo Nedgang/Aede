@@ -81,6 +81,26 @@ class Search_form(ui.left_drawer):
                          parameters (gene, feature, etc...) limit choice to chr18.""")
                 .classes("w-full")
             ).props("debounce=500")
+            self.variant_id.on(
+                "blur",
+                lambda: (
+                    (
+                        self.harmonize_chrom_options(),
+                        self.harmonize_gene_options(),
+                        self.harmonize_features_options(),
+                    )
+                    if not self.variant_id.error
+                    else (
+                        ui.notify(
+                            f"""{self.variant_id.value} not in POPGEN database for the request
+                        available chromosomes.""",
+                            type="warning",
+                            position="center",
+                        ),
+                        self.variant_id.set_value(""),
+                    ),
+                ),
+            )
             # csq_Feature
             self.features = (
                 ui.select(
@@ -204,13 +224,11 @@ class Search_form(ui.left_drawer):
         Check gene/id/feature widget and adjust available chromosome options in accordance
         """
         if (
-            self.chrom.value is None
-            and self.variant_id.value is None
-            and self.features.value is None
+            self.variant_id.value == ""
+            and self.gene.value is None
+            and self.features.value == []
         ):
-            self.chrom.set_options(
-                options=self.chromosomes_list, value=self.chromosomes_list[0]
-            )
+            self.chrom.set_options(options=self.chromosomes_list)
         else:
             if self.variant_id.value is not None:
                 self.chrom.set_options(
@@ -219,6 +237,7 @@ class Search_form(ui.left_drawer):
                     .to_list(),
                     value=self.chrom.options[0],
                 )
+                self.chrom.set_value(self.chrom.options[0])
             elif self.features.value is not None:
                 self.chrom.set_options(
                     self.lf_feature_chrom_symbol.filter(
@@ -248,8 +267,8 @@ class Search_form(ui.left_drawer):
             )
             .select("csq_SYMBOL")
             .unique()
-            .sort()
             .collect()["csq_SYMBOL"]
+            .sort()
             .to_list()
         )
 
@@ -257,13 +276,13 @@ class Search_form(ui.left_drawer):
         """
         Adapt features options depending on the available chromosomes
         """
-        self.gene.set_options(
+        self.features.set_options(
             self.lf_feature_chrom_symbol.filter(
                 pl.col("chrom").is_in(self.chrom.options)
             )
             .select("csq_Feature")
             .unique()
-            .sort()
             .collect()["csq_Feature"]
+            .sort()
             .to_list()
         )

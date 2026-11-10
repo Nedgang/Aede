@@ -128,41 +128,6 @@ async def output_selected_row(variant_type) -> None:
         GENERAL_STATE[f"display_{variant_type}_csq"] = False
 
 
-def harmonize_chrom_options(
-    select_chr,
-    request: dict,
-    base_chr: list,
-    link_feature_chrom: pl.LazyFrame,
-    link_id_chrom: pl.LazyFrame,
-) -> None:
-    if request["id"] == "" and request["feature"] == [] and request["gene"] is None:
-        select_chr.set_options(base_chr, value=base_chr[0])
-    else:
-        if request["id"] != "":
-            select_chr.set_options(
-                link_id_chrom.filter(pl.col("id") == request["id"])
-                .collect()["chrom"]
-                .to_list(),
-                value=select_chr.options[0],
-            )
-        elif request["feature"] != []:
-            select_chr.set_options(
-                link_feature_chrom.filter(
-                    pl.col("csq_Feature").is_in(request["feature"])
-                )
-                .collect()["chrom"]
-                .to_list(),
-                value=select_chr.options[0],
-            )
-        else:
-            select_chr.set_options(
-                link_feature_chrom.filter(pl.col("csq_SYMBOL") == request["gene"])
-                .collect()["chrom"]
-                .to_list(),
-                value=select_chr.options[0],
-            )
-
-
 def clear_results(variants: list(str)):
     for variant_type in variants:
         GENERAL_STATE["result_table_" + variant_type].options["rowData"].clear()
@@ -282,7 +247,6 @@ def search_page():
     )
     # Link search form toggle to the button in the header
     header.search_form_button.on_click(lambda: search_form.toggle())
-
     # Link value from widgets to the REQUEST formulary
     search_form.variant_type.bind_value(REQUEST, "variant_type")
     search_form.gene.bind_value(REQUEST, "gene")
@@ -310,58 +274,26 @@ def search_page():
         )
     )
 
-    (
-        search_form.variant_id.on(
-            "blur",
-            lambda variant_id=search_form.variant_id, chromosomes=chromosomes: (
-                (
-                    search_form.chrom.set_options(
-                        [
-                            link_id_chrom.filter(
-                                pl.col("id") == variant_id.value
-                            ).collect()["chrom"][0]
-                        ]
-                    ).set_value(search_form.chrom.options[0])
-                    if variant_id.value != ""
-                    else harmonize_chrom_options(
-                        search_form.chrom,
-                        REQUEST,
-                        chromosomes,
-                        link_feature_chrom,
-                        link_id_chrom,
-                    ),
-                    search_form.features.set_options(
-                        link_feature_chrom.filter(
-                            pl.col("chrom").is_in(search_form.chrom.options)
-                        )
-                        .collect()["csq_Feature"]
-                        .unique()
-                        .sort()
-                        .to_list()
-                    ),
-                    search_form.gene.set_options(
-                        link_feature_chrom.filter(
-                            pl.col("chrom").is_in(search_form.chrom.options)
-                        )
-                        .collect()["csq_SYMBOL"]
-                        .unique()
-                        .sort()
-                        .to_list()
-                    ),
-                )
-                if not variant_id.error
-                else (
-                    ui.notify(
-                        f"""{variant_id.value} not in POPGEN database for the request
-                        available chromosomes.""",
-                        type="warning",
-                        position="center",
-                    ),
-                    variant_id.set_value(""),
-                ),
-            ),
-        ),
-    )
+    # search_form.variant_id.on(
+    #     "blur",
+    #     lambda variant_id=search_form.variant_id, chromosomes=chromosomes: (
+    #         (
+    #             search_form.harmonize_chrom_options(),
+    #             search_form.harmonize_gene_options(),
+    #             search_form.harmonize_features_options(),
+    #         )
+    #         if not variant_id.error
+    #         else (
+    #             ui.notify(
+    #                 f"""{variant_id.value} not in POPGEN database for the request
+    #             available chromosomes.""",
+    #                 type="warning",
+    #                 position="center",
+    #             ),
+    #             variant_id.set_value(""),
+    #         ),
+    #     ),
+    # )
 
     # Checking link between id/gene/feature on chromosome options, and other widgets
     # options
