@@ -1,6 +1,7 @@
 ##########
 # IMPORT #
 ##########
+import polars as pl
 from nicegui import ui
 
 
@@ -186,3 +187,42 @@ class Search_form(ui.left_drawer):
                 self.clear = ui.button("Clear", color="red")
                 ui.space()
                 self.search = ui.button("Search")
+
+    def harmonize_chrom_options(self) -> None:
+        """
+        Check gene/id/feature widget and adjust available chromosome options in accordance
+        """
+        if (
+            self.chrom.value is None
+            and self.variant_id.value is None
+            and self.features.value is None
+        ):
+            self.chrom.set_options(
+                options=self.chromosomes_list, value=self.chromosomes_list[0]
+            )
+        else:
+            if self.variant_id.value is not None:
+                self.chrom.set_options(
+                    self.lf_id_chrom.filter(pl.col("id") == self.variant_id.value)
+                    .collect()["chrom"]
+                    .to_list(),
+                    value=self.chrom.options[0],
+                )
+            elif self.features.value is not None:
+                self.chrom.set_options(
+                    self.lf_feature_chrom_symbol.filter(
+                        pl.col("csq_Feature").is_in(self.features.value)
+                    )
+                    .collect()["chrom"]
+                    .to_list(),
+                    value=self.chrom.options[0],
+                )
+            else:
+                self.chrom.set_options(
+                    self.lf_feature_chrom_symbol.filter(
+                        pl.col("csq_SYMBOL") == self.gene.value
+                    )
+                    .collect()["chrom"]
+                    .to_list(),
+                    value=self.chrom.options[0],
+                )
