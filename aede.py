@@ -7,6 +7,7 @@ import polars as pl
 import requests
 from nicegui import ui
 
+from src.frontend.components.footer import Footer
 from src.frontend.components.header import Header
 from src.frontend.components.search_form import Search_form
 
@@ -555,8 +556,7 @@ def search_page():
                                 ),
                             )
 
-    with ui.footer(elevated=True, fixed=False):
-        ui.label("Ceci est le bas de la page pour rajouter pleeeeeeins de trucs!")
+    Footer(elevated=True, fixed=False)
 
 
 if __name__ in {"__main__", "__mp_main__"}:
