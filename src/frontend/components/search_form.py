@@ -81,6 +81,8 @@ class Search_form(ui.left_drawer):
                          parameters (gene, feature, etc...) limit choice to chr18.""")
                 .classes("w-full")
             ).props("debounce=500")
+            # Check if variant id is in the available chromosomes, and harmonize linked
+            # options if it is the case.
             self.variant_id.on(
                 "blur",
                 lambda: (
