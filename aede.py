@@ -310,16 +310,6 @@ def search_page():
         )
     )
 
-    # Check if variant id exist in those chr options, and alter chromosome choice if ok
-    search_form.variant_id.validation = {
-        "Not in DB": lambda v: (
-            not link_id_chrom.filter(pl.col("chrom").is_in(search_form.chrom.options))
-            .filter(pl.col("id") == v)
-            .collect()
-            .is_empty()
-            or v == ""
-        )
-    }
     (
         search_form.variant_id.on(
             "blur",

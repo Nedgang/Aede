@@ -63,6 +63,17 @@ class Search_form(ui.left_drawer):
             self.variant_id = (
                 ui.input(
                     label="Variant ID",
+                    validation={
+                        "Not in DB": lambda v: (
+                            not self.lf_id_chrom.filter(
+                                pl.col("chrom").is_in(self.chrom.options)
+                            )
+                            .filter(pl.col("id") == v)
+                            .collect()
+                            .is_empty()
+                            or v == ""
+                        )
+                    },
                 )
                 .tooltip("""It will be automaticly checked if it is present in the
                          database at the available chromosome, and limit chrom choice if
