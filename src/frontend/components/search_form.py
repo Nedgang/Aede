@@ -61,7 +61,20 @@ class Search_form(ui.left_drawer):
             )
             # When a gene is selected, harmonize options for other genes, chromosome, and
             # features
-            self.gene.on_value_change(lambda: self.harmonize_chrom_options())
+            self.gene.on_value_change(
+                lambda: (
+                    self.harmonize_chrom_options(),
+                    self.harmonize_gene_options(),
+                    self.harmonize_features_options(),
+                    ui.notify(
+                        "Multiple chr possible for this selected gene, please select one",
+                        type="warning",
+                        position="center",
+                    )
+                    if len(self.chrom.options) > 1
+                    else None,
+                )
+            )
             # ID search
             self.variant_id = (
                 ui.input(
