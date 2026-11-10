@@ -231,6 +231,14 @@ for variant_type in all_variants_type:
 ########
 @ui.page("/")
 def search_page():
+    """
+    Main research page.
+    """
+    # Dict to follow and tranfer information from one component to another
+    variant_type_visibility = {
+        variant_type: variant_type in REQUEST["variant_type"]
+        for variant_type in all_variants_type
+    }
     with open("../Mneme/Impact.txt", "r") as file:
         impact_list = [impact.strip() for impact in file]
     with open("../Mneme/consequences.txt", "r") as file:
@@ -252,7 +260,7 @@ def search_page():
     # Link value from widgets to the REQUEST formulary
     # Link variant type selection to general state value for results visibility
     search_form.variant_type.bind_value(REQUEST, "variant_type").on_value_change(
-        lambda: GENERAL_STATE.update(
+        lambda: variant_type_visibility.update(
             {var: var in search_form.variant_type.value for var in all_variants_type}
         ),
     )
@@ -282,7 +290,7 @@ def search_page():
     )
 
     for variant_type in all_variants_type:
-        Variant_results().bind_visibility(GENERAL_STATE, variant_type)
+        Variant_results().bind_visibility(variant_type_visibility, variant_type)
         # Variants result row
         with ui.row().classes("w-full").bind_visibility(GENERAL_STATE, variant_type):
             with (
