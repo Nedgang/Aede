@@ -11,12 +11,12 @@ from nicegui import ui
 class Search_form(ui.left_drawer):
     def __init__(
         self,
-        variants_type,
-        chromosomes_list,
-        impact_list,
-        consequence_list,
-        lf_id_chrom,
-        lf_feature_chrom_symbol,
+        variants_type: list,
+        chromosomes_list: list,
+        impact_list: list,
+        consequence_list: list,
+        lf_id_chrom: pl.LazyFrame,
+        lf_feature_chrom_symbol: pl.LazyFrame,
         *args,
         **kwargs,
     ):
@@ -237,3 +237,33 @@ class Search_form(ui.left_drawer):
                     .to_list(),
                     value=self.chrom.options[0],
                 )
+
+    def harmonize_gene_options(self) -> None:
+        """
+        Adapt gene options depending on the available chromosomes
+        """
+        self.gene.set_options(
+            self.lf_feature_chrom_symbol.filter(
+                pl.col("chrom").is_in(self.chrom.options)
+            )
+            .select("csq_SYMBOL")
+            .unique()
+            .sort()
+            .collect()["csq_SYMBOL"]
+            .to_list()
+        )
+
+    def harmonize_features_options(self) -> None:
+        """
+        Adapt features options depending on the available chromosomes
+        """
+        self.gene.set_options(
+            self.lf_feature_chrom_symbol.filter(
+                pl.col("chrom").is_in(self.chrom.options)
+            )
+            .select("csq_Feature")
+            .unique()
+            .sort()
+            .collect()["csq_Feature"]
+            .to_list()
+        )
