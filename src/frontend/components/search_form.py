@@ -140,6 +140,16 @@ class Search_form(ui.left_drawer):
                          chromosome.""")
                 .classes("w-full")
             )
+            # When a feature is selected, harmonize options for other genes, chromosome,
+            # and features
+            self.features.on_value_change(
+                lambda: (
+                    self.harmonize_chrom_options(),
+                    self.harmonize_gene_options(),
+                    self.harmonize_features_options(),
+                )
+            )
+
             # Variant impact
             self.impact = ui.select(
                 label="Variant impacts",
