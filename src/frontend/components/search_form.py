@@ -71,7 +71,7 @@ class Search_form(ui.left_drawer):
                         type="warning",
                         position="center",
                     )
-                    if len(self.chrom.options) > 1
+                    if len(self.chrom.options) > 1 and self.gene.value is not None
                     else None,
                 )
             )
