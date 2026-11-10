@@ -643,7 +643,9 @@ def search_page():
                                 )
                 with ui.card().classes("w-75/100 h-105"):
                     with ui.row():
-                        ui.label(f"CSQ on {variant_type}").classes("text-h5")
+                        ui.label(f"Transcript details on {variant_type}").classes(
+                            "text-h5"
+                        )
                         col_select = ui.button(icon="menu")
                         ui.switch("Variant selection", value=True).bind_value_to(
                             GENERAL_STATE, f"display_{variant_type}_variants"

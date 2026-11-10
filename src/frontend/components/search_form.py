@@ -68,7 +68,7 @@ class Search_form(ui.left_drawer):
             # csq_Feature
             self.features = (
                 ui.select(
-                    label="Feature ID",
+                    label="Trancript ID",
                     options=[],
                     with_input=True,
                     multiple=True,
