@@ -295,12 +295,7 @@ def search_page():
     }
 
     # Link search form toggle to the button in the header
-    header.search_form_button.on_click(
-        lambda: (
-            search_form.toggle(),
-            variant_type_results["SNV-Indel"].refresh(),
-        )
-    )
+    header.search_form_button.on_click(lambda: (search_form.toggle(),))
 
     for variant_type in all_variants_type:
         # Variants result row

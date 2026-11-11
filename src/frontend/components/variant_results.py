@@ -26,9 +26,10 @@ class Variant_results(ui.row):
             ):
                 with ui.row():
                     ui.label(variant_type).classes("text-h5")
-                variant_selector(self.variants)
+                self.selector = variant_selector(self.variants)
             with ui.row():
                 pass
 
-    def refresh(self):
-        variant_selector.refresh(self.variants)
+    def refresh_selector(self):
+        """"""
+        self.selector.update()

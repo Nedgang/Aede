@@ -7,9 +7,8 @@ from nicegui import ui
 ####################
 # VARIANT SELECTOR #
 ####################
-@ui.refreshable
-def variant_selector(rows: list(dict)) -> None:
-    ui.aggrid(
+def variant_selector(rows: list(dict)) -> ui.aggrid:
+    return ui.aggrid(
         {
             "columnDefs": [
                 {"headerName": "CHROM", "field": "chrom"},
