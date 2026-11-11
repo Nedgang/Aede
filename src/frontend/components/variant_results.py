@@ -26,10 +26,24 @@ class Variant_results(ui.row):
             ):
                 with ui.row():
                     ui.label(variant_type).classes("text-h5")
+                    col_selection = ui.button(icon="menu")
                 self.selector = variant_selector(self.variants)
+                # Allowing columns selection
+                with col_selection, ui.menu(), ui.column().classes("'gap-0 p-2'"):
+                    for column in self.selector.options["columnDefs"]:
+                        ui.switch(
+                            column["headerName"],
+                            value=True,
+                            on_change=lambda switch, column=column: (
+                                self.selector.run_grid_method(
+                                    "setColumnsVisible", [column["field"]], switch.value
+                                )
+                            ),
+                        )
+
             with ui.row():
                 pass
 
     def refresh_selector(self):
         """"""
-        self.selector.update()
+        self.selector.run_grid_method("autoSizeAllColumns")
