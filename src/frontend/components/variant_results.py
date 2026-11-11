@@ -13,7 +13,7 @@ class Variant_results(ui.row):
     def __init__(self, variant_type, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.classes("w-full")
-        self.element_visibility = {"variant_selection": True, "variant_detail": False}
+        self.element_visibility = {"variant_selection": True, "variant_details": True}
         self.variants = []
         with self:
             with (
@@ -40,9 +40,28 @@ class Variant_results(ui.row):
                                 )
                             ),
                         )
-
-            with ui.row():
-                pass
+            with (
+                ui.row()
+                .classes("w-full")
+                .bind_visibility(self.element_visibility, "variant_details")
+            ):
+                with ui.card().classes("w-23/100 h-105"):
+                    with ui.row().classes("w-full"):
+                        ui.label(f"Details on {variant_type}").classes("text-h5")
+                    with ui.tabs().classes("w-full") as tabs:
+                        ui.tab("info")
+                        ui.tab("freq")
+                        ui.tab("gnomad")
+                with ui.card().classes("w-75/100 h-105"):
+                    with ui.row():
+                        ui.label(f"Transcript details on {variant_type}").classes(
+                            "text-h5"
+                        )
+                        col_select = ui.button(icon="menu")
+                        ui.switch("Variant selection", value=True).bind_value_to(
+                            self.element_visibility, "variant_selection"
+                        )
+                    ui.label("aggrid here")
 
     def refresh_selector(self):
         """"""
