@@ -65,4 +65,5 @@ class Variant_results(ui.row):
 
     def refresh_selector(self):
         """"""
-        self.selector.run_grid_method("autoSizeAllColumns")
+        # self.selector.run_grid_method("autoSizeAllColumns")
+        self.selector.run_grid_method("sizeColumnsToFit")
