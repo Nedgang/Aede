@@ -4,6 +4,7 @@
 import os
 
 import polars as pl
+import requests
 from nicegui import ui
 
 from src.frontend.components.footer import Footer
@@ -34,6 +35,31 @@ def reset_request(all_variants_type: list(str), chromosomes: list(str)) -> dict:
         "in_gnomad": False,
         "pass_gnomad": False,
     }
+
+
+def launch_variants_search(
+    request: dict, variant_type_results: dict(Variant_results)
+) -> None:
+    """
+    TODO
+    """
+    answer = requests.get("http://localhost:8000/query/v1/variants/", params=request)
+    if answer.ok:
+        answer = answer.json()
+        for variant_type in answer:
+            variant_type_results[variant_type].set_request_results(
+                answer[variant_type]["results"]
+            )
+            variant_type_results[variant_type].update_selector()
+        if answer[variant_type]["warning"]:
+            ui.notify(
+                answer.json()[variant_type]["message"],
+                type="warning",
+                position="center",
+            )
+        ui.notify("Results received!")
+    else:
+        ui.notify(answer.json()["detail"], type="negative", position="center")
 
 
 ###############
@@ -102,17 +128,6 @@ def search_page():
     search_form.in_gnomad.bind_value(request, "in_gnomad")
     search_form.pass_gnomad.bind_value(request, "pass_gnomad")
 
-    # Link an effect to search form buttons
-    search_form.clear.on_click(
-        lambda: request.update(reset_request(all_variants_type, chromosomes))
-    )
-    search_form.search.on_click(
-        lambda: (
-            ui.notify("Request sent to the API"),
-            # run_variant_search(),
-        )
-    )
-
     variant_type_results = {
         variant_type: Variant_results(variant_type).bind_visibility(
             variant_type_visibility, variant_type
@@ -120,6 +135,16 @@ def search_page():
         for variant_type in all_variants_type
     }
 
+    # Link an effect to search form buttons
+    search_form.clear.on_click(
+        lambda: request.update(reset_request(all_variants_type, chromosomes))
+    )
+    search_form.search.on_click(
+        lambda: (
+            ui.notify("Request sent to the API"),
+            launch_variants_search(request, variant_type_results),
+        )
+    )
     # Link search form toggle to the button in the header
     header.search_form_button.on_click(
         lambda: (

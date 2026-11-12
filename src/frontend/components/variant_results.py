@@ -1,6 +1,7 @@
 ##########
 # IMPORT #
 ##########
+import polars as pl
 from nicegui import ui
 
 from src.frontend.aggrid.variant_consequences import variant_consequences
@@ -21,7 +22,7 @@ class Variant_results(ui.row):
     def __init__(self, variant_type, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.classes("w-full")
-        self.variants = []
+        self.request_results = pl.DataFrame()
         element_visibility = {"variant_selection": True, "variant_details": False}
         # Get details information (label + column) from parameters depending on variant
         # type. Will generate details for selected variant informations.
@@ -126,7 +127,38 @@ class Variant_results(ui.row):
                                 ),
                             )
 
-    def refresh_selector(self):
-        """"""
+    def refresh_selector(self) -> None:
+        """
+        TODO
+        """
         # self.selector.run_grid_method("autoSizeAllColumns")
         self.selector.run_grid_method("sizeColumnsToFit")
+
+    def set_request_results(self, search_results: list(dict)) -> None:
+        """
+        TODO
+        """
+        if search_results != []:
+            self.request_results = pl.from_dicts(
+                search_results, infer_schema_length=None
+            )
+        else:
+            self.request_results = pl.DataFrame()
+
+    def update_selector(self) -> None:
+        """
+        TODO
+        """
+        self.selector.options["rowData"].clear()
+        if len(self.request_results) > 0:
+            self.selector.options["rowData"].extend(
+                self.request_results.select(
+                    pl.col(
+                        ["variant_key"]
+                        + [col["field"] for col in self.selector.options["columnDefs"]]
+                    )
+                )
+                .unique()
+                .sort("pos")
+                .to_dicts()
+            )
