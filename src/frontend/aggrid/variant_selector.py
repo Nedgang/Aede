@@ -58,4 +58,4 @@ def variant_selector(rows: list(dict)) -> ui.aggrid:
         },
         theme="balham",
         auto_size_columns=True,
-    ).classes("w-full h-9/10")
+    )
