@@ -4,6 +4,11 @@
 from nicegui import ui
 
 from src.frontend.aggrid.variant_selector import variant_selector
+from src.frontend.parameters.details_parameters import (
+    variant_details_label_column,
+    variant_frequencies_label_column,
+    variant_gnomad_label_column,
+)
 
 
 ###################
@@ -13,14 +18,25 @@ class Variant_results(ui.row):
     def __init__(self, variant_type, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.classes("w-full")
-        self.element_visibility = {"variant_selection": True, "variant_details": True}
         self.variants = []
+        element_visibility = {"variant_selection": True, "variant_details": True}
+        # Get details information (label + column) from parameters depending on variant
+        # type.
+        details_label_column = variant_details_label_column(variant_type)
+        frequencies_label_column = variant_frequencies_label_column(variant_type)
+        gnomAD_label_column = variant_gnomad_label_column(variant_type)
+        selected_variant_details = {
+            col: ""
+            for col in list(details_label_column.values())
+            + list(frequencies_label_column.values())
+            + list(gnomAD_label_column.values())
+        }
         with self:
             with (
                 (
                     ui.row()
                     .classes("w-full")
-                    .bind_visibility(self.element_visibility, "variant_selection")
+                    .bind_visibility(element_visibility, "variant_selection")
                 ),
                 ui.card().classes("w-99/100 h-105"),
             ):
@@ -43,7 +59,7 @@ class Variant_results(ui.row):
             with (
                 ui.row()
                 .classes("w-full")
-                .bind_visibility(self.element_visibility, "variant_details")
+                .bind_visibility(element_visibility, "variant_details")
             ):
                 with ui.card().classes("w-23/100 h-105"):
                     with ui.row().classes("w-full"):
@@ -52,6 +68,14 @@ class Variant_results(ui.row):
                         ui.tab("info")
                         ui.tab("freq")
                         ui.tab("gnomad")
+                    with ui.tab_panels(tabs, value="info").classes("w-full"):
+                        with ui.tab_panel("info"), ui.grid(columns=2):
+                            for detail in details_label_column:
+                                ui.label(detail)
+                                ui.label().bind_text_from(
+                                    selected_variant_details, detail
+                                )
+
                 with ui.card().classes("w-75/100 h-105"):
                     with ui.row():
                         ui.label(f"Transcript details on {variant_type}").classes(
@@ -59,7 +83,7 @@ class Variant_results(ui.row):
                         )
                         col_select = ui.button(icon="menu")
                         ui.switch("Variant selection", value=True).bind_value_to(
-                            self.element_visibility, "variant_selection"
+                            element_visibility, "variant_selection"
                         )
                     ui.label("aggrid here")
 
