@@ -22,7 +22,7 @@ class Variant_results(ui.row):
         super().__init__(*args, **kwargs)
         self.classes("w-full")
         self.variants = []
-        element_visibility = {"variant_selection": True, "variant_details": True}
+        element_visibility = {"variant_selection": True, "variant_details": False}
         # Get details information (label + column) from parameters depending on variant
         # type. Will generate details for selected variant informations.
         details_label_column = variant_details_label_column(variant_type)
