@@ -48,7 +48,7 @@ class Variant_results(ui.row):
                     ui.label(variant_type).classes("text-h5")
                     col_selector = ui.button(icon="menu")
                 # Generate aggrid for variant selection
-                self.selector = variant_selector(self.variants).classes("w-full h-9/10")
+                self.selector = variant_selector(variant_type).classes("w-full h-9/10")
                 # Allowing columns selection
                 with col_selector, ui.menu(), ui.column().classes("'gap-0 p-2'"):
                     for column in self.selector.options["columnDefs"]:
