@@ -1,6 +1,8 @@
 ##########
 # IMPORT #
 ##########
+from nicegui import ui
+
 
 #############
 # FUNCTIONS #
@@ -62,5 +64,16 @@ def variant_gnomad_label_column(variant_type: str) -> dict:
             "Pass gnomAD QC": "passGnomad",
             "Not covered by gnomAD": "notCoveredByGnomad",
         }
+    else:
+        raise ValueError(f"{variant_type} not parametered yet")
+
+
+def complementary_freq_details(variant_type: str) -> list:
+    """
+    Return list of complementary information to the frequency table depending on the
+    variant type.
+    """
+    if variant_type == "SNV-Indel":
+        return ["AC_Hom", "grpmax"]
     else:
         raise ValueError(f"{variant_type} not parametered yet")

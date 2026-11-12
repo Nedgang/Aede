@@ -5,10 +5,12 @@ from nicegui import ui
 
 from src.frontend.aggrid.variant_selector import variant_selector
 from src.frontend.parameters.details_parameters import (
+    complementary_freq_details,
     variant_details_label_column,
     variant_frequencies_label_column,
     variant_gnomad_label_column,
 )
+from src.frontend.table.details_freq_table import details_freq_table
 
 
 ###################
@@ -43,6 +45,7 @@ class Variant_results(ui.row):
                 with ui.row():
                     ui.label(variant_type).classes("text-h5")
                     col_selection = ui.button(icon="menu")
+                # Generate aggrid for variant selection
                 self.selector = variant_selector(self.variants)
                 # Allowing columns selection
                 with col_selection, ui.menu(), ui.column().classes("'gap-0 p-2'"):
@@ -73,9 +76,19 @@ class Variant_results(ui.row):
                             for detail in details_label_column:
                                 ui.label(detail)
                                 ui.label().bind_text_from(
-                                    selected_variant_details, detail
+                                    selected_variant_details,
+                                    details_label_column[detail],
                                 )
-
+                        with ui.tab_panel("freq"):
+                            self.freq_table = details_freq_table(variant_type).classes(
+                                "w-full"
+                            )
+                            with ui.grid(columns=2):
+                                for freq in complementary_freq_details(variant_type):
+                                    ui.label(freq)
+                                    ui.label().bind_text_from(
+                                        selected_variant_details, freq
+                                    )
                 with ui.card().classes("w-75/100 h-105"):
                     with ui.row():
                         ui.label(f"Transcript details on {variant_type}").classes(
