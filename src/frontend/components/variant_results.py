@@ -3,6 +3,7 @@
 ##########
 from nicegui import ui
 
+from src.frontend.aggrid.variant_consequences import variant_consequences
 from src.frontend.aggrid.variant_selector import variant_selector
 from src.frontend.parameters.details_parameters import (
     complementary_freq_details,
@@ -45,11 +46,11 @@ class Variant_results(ui.row):
             ):
                 with ui.row():
                     ui.label(variant_type).classes("text-h5")
-                    col_selection = ui.button(icon="menu")
+                    col_selector = ui.button(icon="menu")
                 # Generate aggrid for variant selection
                 self.selector = variant_selector(self.variants).classes("w-full h-9/10")
                 # Allowing columns selection
-                with col_selection, ui.menu(), ui.column().classes("'gap-0 p-2'"):
+                with col_selector, ui.menu(), ui.column().classes("'gap-0 p-2'"):
                     for column in self.selector.options["columnDefs"]:
                         ui.switch(
                             column["headerName"],
@@ -83,9 +84,9 @@ class Variant_results(ui.row):
                                     details_label_column[detail],
                                 )
                         with ui.tab_panel("freq"):
-                            self.freq_table = details_freq_table(variant_type).classes(
-                                "w-full"
-                            )
+                            self.variant_freq_table = details_freq_table(
+                                variant_type
+                            ).classes("w-full")
                             with ui.grid(columns=2):
                                 for freq in complementary_freq_details(variant_type):
                                     ui.label(freq)
@@ -105,11 +106,25 @@ class Variant_results(ui.row):
                         ui.label(f"Transcript details on {variant_type}").classes(
                             "text-h5"
                         )
-                        col_select = ui.button(icon="menu")
+                        col_csq = ui.button(icon="menu")
                         ui.switch("Variant selection", value=True).bind_value_to(
                             element_visibility, "variant_selection"
                         )
-                    ui.label("aggrid here")
+                    self.variant_consequences = variant_consequences(variant_type)
+                    # Allowing columns selection
+                    with col_csq, ui.menu(), ui.column().classes("'gap-0 p-2'"):
+                        for column in self.variant_consequences.options["columnDefs"]:
+                            ui.switch(
+                                column["headerName"],
+                                value=True,
+                                on_change=lambda switch, column=column: (
+                                    self.variant_consequences.run_grid_method(
+                                        "setColumnsVisible",
+                                        [column["field"]],
+                                        switch.value,
+                                    )
+                                ),
+                            )
 
     def refresh_selector(self):
         """"""
