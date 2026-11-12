@@ -23,7 +23,7 @@ class Variant_results(ui.row):
         self.variants = []
         element_visibility = {"variant_selection": True, "variant_details": True}
         # Get details information (label + column) from parameters depending on variant
-        # type.
+        # type. Will generate details for selected variant informations.
         details_label_column = variant_details_label_column(variant_type)
         frequencies_label_column = variant_frequencies_label_column(variant_type)
         gnomAD_label_column = variant_gnomad_label_column(variant_type)
@@ -34,6 +34,7 @@ class Variant_results(ui.row):
             + list(gnomAD_label_column.values())
         }
         with self:
+            # Line with the variant selector aggrid
             with (
                 (
                     ui.row()
@@ -59,11 +60,13 @@ class Variant_results(ui.row):
                                 )
                             ),
                         )
+            # Line with variant details card, and variant consequences card
             with (
                 ui.row()
                 .classes("w-full")
                 .bind_visibility(element_visibility, "variant_details")
             ):
+                # Variant details card
                 with ui.card().classes("w-23/100 h-105"):
                     with ui.row().classes("w-full"):
                         ui.label(f"Details on {variant_type}").classes("text-h5")
@@ -89,6 +92,7 @@ class Variant_results(ui.row):
                                     ui.label().bind_text_from(
                                         selected_variant_details, freq
                                     )
+                # Variant consequences card
                 with ui.card().classes("w-75/100 h-105"):
                     with ui.row():
                         ui.label(f"Transcript details on {variant_type}").classes(
