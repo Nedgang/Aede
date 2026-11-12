@@ -92,6 +92,13 @@ class Variant_results(ui.row):
                                     ui.label().bind_text_from(
                                         selected_variant_details, freq
                                     )
+                        with ui.tab_panel("gnomad"), ui.grid(columns=2):
+                            for detail in gnomAD_label_column:
+                                ui.label(detail)
+                                ui.label().bind_text_from(
+                                    selected_variant_details,
+                                    gnomAD_label_column[detail],
+                                )
                 # Variant consequences card
                 with ui.card().classes("w-75/100 h-105"):
                     with ui.row():
