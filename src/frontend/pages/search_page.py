@@ -41,7 +41,8 @@ def launch_variants_search(
     request: dict, variant_type_results: dict(Variant_results)
 ) -> None:
     """
-    TODO
+    Send an interogation to the API using the request dict completed by search_form
+    widgets and distribute results to the correct variant_results display.
     """
     answer = requests.get("http://localhost:8000/query/v1/variants/", params=request)
     if answer.ok:
@@ -51,6 +52,8 @@ def launch_variants_search(
                 answer[variant_type]["results"]
             )
             variant_type_results[variant_type].update_selector()
+        # A partial answer can be provided by the API, so in this case the warning must
+        # be displayed.
         if answer[variant_type]["warning"]:
             ui.notify(
                 answer.json()[variant_type]["message"],
@@ -79,23 +82,24 @@ def search_page():
             if dir.is_dir() and "_index.parquet" not in dir.name
         ]
     )
-    with open("../Mneme/chromosomes.txt") as file:
-        chromosomes = [chr.strip() for chr in file]
-        file.close()
-    # Base request
-    request = reset_request(all_variants_type, chromosomes)
     # Link between feature, id and gene on chromosomes
     link_feature_chrom = pl.scan_parquet("../Mneme/feature_index.parquet")
     link_id_chrom = pl.scan_parquet("../Mneme/id_index.parquet")
-    # Dict to follow and tranfer information from one component to another
-    variant_type_visibility = {
-        variant_type: variant_type in request["variant_type"]
-        for variant_type in all_variants_type
-    }
+    # Find other options from auxiliary files
+    with open("../Mneme/chromosomes.txt") as file:
+        chromosomes = [chr.strip() for chr in file]
+        file.close()
     with open("../Mneme/Impact.txt", "r") as file:
         impact_list = [impact.strip() for impact in file]
     with open("../Mneme/consequences.txt", "r") as file:
         csq_list = [csq.strip() for csq in file]
+    # Base request
+    request = reset_request(all_variants_type, chromosomes)
+    # Dict to track variant_results visibility
+    variant_type_visibility = {
+        variant_type: variant_type in request["variant_type"]
+        for variant_type in all_variants_type
+    }
     # Initialize header and search form
     header = Header(elevated=True)
     search_form = Search_form(
@@ -127,14 +131,13 @@ def search_page():
     search_form.gnomad_regions.bind_value(request, "gnomad_regions")
     search_form.in_gnomad.bind_value(request, "in_gnomad")
     search_form.pass_gnomad.bind_value(request, "pass_gnomad")
-
+    # Create a variant_result component for each variant type
     variant_type_results = {
         variant_type: Variant_results(variant_type).bind_visibility(
             variant_type_visibility, variant_type
         )
         for variant_type in all_variants_type
     }
-
     # Link an effect to clear page buttons
     search_form.clear.on_click(
         lambda: (
