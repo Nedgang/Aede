@@ -8,6 +8,10 @@ from nicegui import ui
 # VARIANT SELECTOR #
 ####################
 def variant_selector(variant_type: str) -> ui.aggrid:
+    """
+    Depending on the variant type, return an aggrid adapted to general display and variant
+    selection.
+    """
     if variant_type == "SNV-Indel":
         return ui.aggrid(
             {
