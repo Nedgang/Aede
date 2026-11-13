@@ -155,10 +155,5 @@ def search_page():
         )
     )
     # Link search form toggle to the button in the header
-    header.search_form_button.on_click(
-        lambda: (
-            search_form.toggle(),
-            variant_type_results["SNV-Indel"].refresh_selector(),
-        )
-    )
+    header.search_form_button.on_click(lambda: (search_form.toggle(),))
     Footer(elevated=True, fixed=False)
