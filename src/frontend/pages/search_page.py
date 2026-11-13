@@ -135,15 +135,18 @@ def search_page():
         for variant_type in all_variants_type
     }
 
-    # Link an effect to search form buttons
+    # Link an effect to clear page buttons
     search_form.clear.on_click(
         lambda: (
+            search_form.reset_options(),
             request.update(reset_request(all_variants_type, chromosomes)),
             [result.clear_display() for result in list(variant_type_results.values())],
         )
     )
+    # Link an effect to search form buttons
     search_form.search.on_click(
         lambda: (
+            [result.clear_display() for result in list(variant_type_results.values())],
             ui.notify("Request sent to the API"),
             launch_variants_search(request, variant_type_results),
         )

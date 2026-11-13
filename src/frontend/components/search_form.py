@@ -315,3 +315,16 @@ class Search_form(ui.left_drawer):
             .sort()
             .to_list()
         )
+
+    def reset_options(self) -> None:
+        """
+        TODO
+        """
+        # Reseting id/gene/features to harmonize everything
+        self.variant_id.value = ""
+        self.gene.value = None
+        self.features.value = []
+        # Harmonize options
+        self.harmonize_chrom_options()
+        self.harmonize_gene_options()
+        self.harmonize_features_options()
