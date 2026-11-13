@@ -1,7 +1,6 @@
 ##########
 # IMPORT #
 ##########
-# import requests
 from nicegui import ui
 
 from src.frontend.pages import home_page, search_page
