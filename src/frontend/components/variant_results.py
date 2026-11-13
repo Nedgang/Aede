@@ -203,19 +203,25 @@ class Variant_results(ui.row):
             )
         else:
             self.element_visibility["variant_details"] = False
-            # PUT THAT TO CLEAR FUNCTION
-            # self.selected_variant_details.update(
-            #     {
-            #         col: ""
-            #         for col in list(self.details_label_column.values())
-            #         + list(self.frequencies_label_column.values())
-            #         + list(self.gnomAD_label_column.values())
-            #     }
-            # )
-            # self.selected_variant_freq_table.update_rows(
-            #     [
-            #         {key: row[key] if key == "pop" else "" for key in row}
-            #         for row in self.selected_variant_freq_table.rows
-            #     ]
-            # )
-            # self.variant_consequences.options["rowData"].clear()
+
+    def clear_display(self) -> None:
+        """
+        TODO
+        """
+        self.selector.options["rowData"].clear()
+        self.element_visibility["variant_details"] = False
+        self.selected_variant_details.update(
+            {
+                col: ""
+                for col in list(self.details_label_column.values())
+                + list(self.frequencies_label_column.values())
+                + list(self.gnomAD_label_column.values())
+            }
+        )
+        self.selected_variant_freq_table.update_rows(
+            [
+                {key: row[key] if key == "pop" else "" for key in row}
+                for row in self.selected_variant_freq_table.rows
+            ]
+        )
+        self.variant_consequences.options["rowData"].clear()

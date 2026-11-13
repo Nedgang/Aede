@@ -137,7 +137,10 @@ def search_page():
 
     # Link an effect to search form buttons
     search_form.clear.on_click(
-        lambda: request.update(reset_request(all_variants_type, chromosomes))
+        lambda: (
+            request.update(reset_request(all_variants_type, chromosomes)),
+            [result.clear_display() for result in list(variant_type_results.values())],
+        )
     )
     search_form.search.on_click(
         lambda: (
