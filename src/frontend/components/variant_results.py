@@ -89,7 +89,7 @@ class Variant_results(ui.row):
                                     self.details_label_column[detail],
                                 )
                         with ui.tab_panel("freq"):
-                            self.variant_freq_table = details_freq_table(
+                            self.selected_variant_freq_table = details_freq_table(
                                 variant_type
                             ).classes("w-full")
                             with ui.grid(columns=2):
@@ -105,6 +105,7 @@ class Variant_results(ui.row):
                                 ui.label().bind_text_from(
                                     self.selected_variant_details,
                                     self.gnomAD_label_column[detail],
+                                    backward=lambda b: str(b),
                                 )
                 # Variant consequences card
                 with ui.card().classes("w-75/100 h-105"):
@@ -160,7 +161,12 @@ class Variant_results(ui.row):
                 self.request_results.select(
                     pl.col(
                         ["variant_key"]
-                        + [col["field"] for col in self.selector.options["columnDefs"]]
+                        + [
+                            col
+                            for col in list(self.details_label_column.values())
+                            + list(self.frequencies_label_column.values())
+                            + list(self.gnomAD_label_column.values())
+                        ]
                     )
                 )
                 .unique()
@@ -175,7 +181,20 @@ class Variant_results(ui.row):
         selected_row = await self.selector.get_selected_row()
         if selected_row:
             self.element_visibility["variant_details"] = True
-            self.selected_variant_details = selected_row
+            self.selected_variant_details.update(selected_row)
+            self.selected_variant_freq_table.update_rows(
+                [
+                    {
+                        key: row[key]
+                        if key == "pop"
+                        else selected_row[key]
+                        if row["pop"] == "All"
+                        else selected_row[f"{key}_{row['pop']}"]
+                        for key in row
+                    }
+                    for row in self.selected_variant_freq_table.rows
+                ]
+            )
             self.variant_consequences.options["rowData"].clear()
             self.variant_consequences.options["rowData"].extend(
                 self.request_results.filter(
@@ -184,10 +203,18 @@ class Variant_results(ui.row):
             )
         else:
             self.element_visibility["variant_details"] = False
-            self.selected_variant_details = {
-                col: ""
-                for col in list(self.details_label_column.values())
-                + list(self.frequencies_label_column.values())
-                + list(self.gnomAD_label_column.values())
-            }
+            self.selected_variant_details.update(
+                {
+                    col: ""
+                    for col in list(self.details_label_column.values())
+                    + list(self.frequencies_label_column.values())
+                    + list(self.gnomAD_label_column.values())
+                }
+            )
+            self.selected_variant_freq_table.update_rows(
+                [
+                    {key: row[key] if key == "pop" else "" for key in row}
+                    for row in self.selected_variant_freq_table.rows
+                ]
+            )
             self.variant_consequences.options["rowData"].clear()
