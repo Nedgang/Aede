@@ -22,7 +22,9 @@ class Variant_results(ui.row):
     def __init__(self, variant_type, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.classes("w-full")
+        # By default, there is no results yet, so it's an empty DataFrame
         self.request_results = pl.DataFrame()
+        # Separate visibility status for variant selection and selected variant display
         self.element_visibility = {"variant_selection": True, "variant_details": False}
         # Get details information (label + column) from parameters depending on variant
         # type. Will generate details for selected variant informations.
@@ -63,7 +65,8 @@ class Variant_results(ui.row):
                             on_change=lambda switch, column=column: (
                                 self.selector.run_grid_method(
                                     "setColumnsVisible", [column["field"]], switch.value
-                                )
+                                ),
+                                self.selector.run_grid_method("autoSizeAllColumns"),
                             ),
                         )
             # Line with variant details card, and variant consequences card
@@ -129,20 +132,16 @@ class Variant_results(ui.row):
                                         "setColumnsVisible",
                                         [column["field"]],
                                         switch.value,
-                                    )
+                                    ),
+                                    self.variant_consequences.run_grid_method(
+                                        "autoSizeAllColumns"
+                                    ),
                                 ),
                             )
 
-    def refresh_selector(self) -> None:
-        """
-        TODO
-        """
-        # self.selector.run_grid_method("autoSizeAllColumns")
-        self.selector.run_grid_method("sizeColumnsToFit")
-
     def set_request_results(self, search_results: list(dict)) -> None:
         """
-        TODO
+        Take results from API call and set it in DataFrame format in self.request_results
         """
         if search_results != []:
             self.request_results = pl.from_dicts(
@@ -153,7 +152,7 @@ class Variant_results(ui.row):
 
     def update_selector(self) -> None:
         """
-        TODO
+        Update selector aggrid using the self.request_results attribute.
         """
         self.selector.options["rowData"].clear()
         if len(self.request_results) > 0:
@@ -173,10 +172,12 @@ class Variant_results(ui.row):
                 .sort("pos")
                 .to_dicts()
             )
+            self.selector.run_grid_method("autoSizeAllColumns")
 
     async def display_selected_row(self) -> None:
         """
-        TODO
+        Used to get information on selector aggrid and display details information in the
+        variant details card and consequence aggrid.
         """
         selected_row = await self.selector.get_selected_row()
         if selected_row:
@@ -201,13 +202,15 @@ class Variant_results(ui.row):
                     pl.col("variant_key") == selected_row["variant_key"]
                 ).to_dicts()
             )
+            self.variant_consequences.run_grid_method("autoSizeAllColumns")
         else:
             self.element_visibility["variant_details"] = False
 
     def clear_display(self) -> None:
         """
-        TODO
+        Reinitialize variant_results.
         """
+        self.set_request_results([])
         self.selector.options["rowData"].clear()
         self.element_visibility["variant_details"] = False
         self.selected_variant_details.update(
