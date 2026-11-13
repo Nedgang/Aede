@@ -23,17 +23,17 @@ class Variant_results(ui.row):
         super().__init__(*args, **kwargs)
         self.classes("w-full")
         self.request_results = pl.DataFrame()
-        element_visibility = {"variant_selection": True, "variant_details": False}
+        self.element_visibility = {"variant_selection": True, "variant_details": False}
         # Get details information (label + column) from parameters depending on variant
         # type. Will generate details for selected variant informations.
-        details_label_column = variant_details_label_column(variant_type)
-        frequencies_label_column = variant_frequencies_label_column(variant_type)
-        gnomAD_label_column = variant_gnomad_label_column(variant_type)
-        selected_variant_details = {
+        self.details_label_column = variant_details_label_column(variant_type)
+        self.frequencies_label_column = variant_frequencies_label_column(variant_type)
+        self.gnomAD_label_column = variant_gnomad_label_column(variant_type)
+        self.selected_variant_details = {
             col: ""
-            for col in list(details_label_column.values())
-            + list(frequencies_label_column.values())
-            + list(gnomAD_label_column.values())
+            for col in list(self.details_label_column.values())
+            + list(self.frequencies_label_column.values())
+            + list(self.gnomAD_label_column.values())
         }
         with self:
             # Line with the variant selector aggrid
@@ -41,7 +41,7 @@ class Variant_results(ui.row):
                 (
                     ui.row()
                     .classes("w-full")
-                    .bind_visibility(element_visibility, "variant_selection")
+                    .bind_visibility(self.element_visibility, "variant_selection")
                 ),
                 ui.card().classes("w-99/100 h-105"),
             ):
@@ -49,7 +49,11 @@ class Variant_results(ui.row):
                     ui.label(variant_type).classes("text-h5")
                     col_selector = ui.button(icon="menu")
                 # Generate aggrid for variant selection
-                self.selector = variant_selector(variant_type).classes("w-full h-9/10")
+                self.selector = (
+                    variant_selector(variant_type)
+                    .classes("w-full h-9/10")
+                    .on("rowSelected", lambda: self.display_selected_row())
+                )
                 # Allowing columns selection
                 with col_selector, ui.menu(), ui.column().classes("'gap-0 p-2'"):
                     for column in self.selector.options["columnDefs"]:
@@ -66,7 +70,7 @@ class Variant_results(ui.row):
             with (
                 ui.row()
                 .classes("w-full")
-                .bind_visibility(element_visibility, "variant_details")
+                .bind_visibility(self.element_visibility, "variant_details")
             ):
                 # Variant details card
                 with ui.card().classes("w-23/100 h-105"):
@@ -78,11 +82,11 @@ class Variant_results(ui.row):
                         ui.tab("gnomad")
                     with ui.tab_panels(tabs, value="info").classes("w-full"):
                         with ui.tab_panel("info"), ui.grid(columns=2):
-                            for detail in details_label_column:
+                            for detail in self.details_label_column:
                                 ui.label(detail)
                                 ui.label().bind_text_from(
-                                    selected_variant_details,
-                                    details_label_column[detail],
+                                    self.selected_variant_details,
+                                    self.details_label_column[detail],
                                 )
                         with ui.tab_panel("freq"):
                             self.variant_freq_table = details_freq_table(
@@ -92,14 +96,15 @@ class Variant_results(ui.row):
                                 for freq in complementary_freq_details(variant_type):
                                     ui.label(freq)
                                     ui.label().bind_text_from(
-                                        selected_variant_details, freq
+                                        self.selected_variant_details,
+                                        freq,
                                     )
                         with ui.tab_panel("gnomad"), ui.grid(columns=2):
-                            for detail in gnomAD_label_column:
+                            for detail in self.gnomAD_label_column:
                                 ui.label(detail)
                                 ui.label().bind_text_from(
-                                    selected_variant_details,
-                                    gnomAD_label_column[detail],
+                                    self.selected_variant_details,
+                                    self.gnomAD_label_column[detail],
                                 )
                 # Variant consequences card
                 with ui.card().classes("w-75/100 h-105"):
@@ -109,7 +114,7 @@ class Variant_results(ui.row):
                         )
                         col_csq = ui.button(icon="menu")
                         ui.switch("Variant selection", value=True).bind_value_to(
-                            element_visibility, "variant_selection"
+                            self.element_visibility, "variant_selection"
                         )
                     self.variant_consequences = variant_consequences(variant_type)
                     # Allowing columns selection
@@ -162,3 +167,27 @@ class Variant_results(ui.row):
                 .sort("pos")
                 .to_dicts()
             )
+
+    async def display_selected_row(self) -> None:
+        """
+        TODO
+        """
+        selected_row = await self.selector.get_selected_row()
+        if selected_row:
+            self.element_visibility["variant_details"] = True
+            self.selected_variant_details = selected_row
+            self.variant_consequences.options["rowData"].clear()
+            self.variant_consequences.options["rowData"].extend(
+                self.request_results.filter(
+                    pl.col("variant_key") == selected_row["variant_key"]
+                ).to_dicts()
+            )
+        else:
+            self.element_visibility["variant_details"] = False
+            self.selected_variant_details = {
+                col: ""
+                for col in list(self.details_label_column.values())
+                + list(self.frequencies_label_column.values())
+                + list(self.gnomAD_label_column.values())
+            }
+            self.variant_consequences.options["rowData"].clear()
