@@ -21,10 +21,10 @@ class Search_form(ui.left_drawer):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        # Need to be attributes to be accessed later in functions
         self.chromosomes_list = chromosomes_list
         self.lf_id_chrom = lf_id_chrom
         self.lf_feature_chrom_symbol = lf_feature_chrom_symbol
-
         # Widgets creation
         with self, ui.column().classes("w-full"):
             ui.label("Request").classes("text-h5")
@@ -52,29 +52,31 @@ class Search_form(ui.left_drawer):
                 )
                 .tooltip(
                     """You can search variant which impact a gene symbol. Choosing one
-                    lead to limitation to the chromosome choice.\n
+                    lead to limitation to the chromosome choice.
                     Options will be limited to the possible chromosomes choice: you won't
                     be able to select a gene on chr13 if you selected another parameter
                     which set chr to only 18."""
                 )
                 .classes("w-full")
-            )
-            # When a gene is selected, harmonize options for other genes, chromosome, and
-            # features
-            self.gene.on_value_change(
-                lambda: (
-                    self.harmonize_chrom_options(),
-                    self.harmonize_gene_options(),
-                    self.harmonize_features_options(),
-                    ui.notify(
-                        "Multiple chr possible for this selected gene, please select one",
-                        type="warning",
-                        position="center",
+                .on_value_change(
+                    lambda event: (
+                        # When a gene is selected, harmonize options for other genes,
+                        # chromosome, and features
+                        self.harmonize_chrom_options(),
+                        self.harmonize_gene_options(),
+                        self.harmonize_features_options(),
+                        ui.notify(
+                            """Multiple chr possible for this selected gene, please select
+                            one""",
+                            type="warning",
+                            position="center",
+                        )
+                        if len(self.chrom.options) > 1 and event.value is not None
+                        else None,
                     )
-                    if len(self.chrom.options) > 1 and self.gene.value is not None
-                    else None,
                 )
             )
+
             # ID search
             self.variant_id = (
                 ui.input(
@@ -139,17 +141,14 @@ class Search_form(ui.left_drawer):
                          Selecting one will also affect the available choice of
                          chromosome.""")
                 .classes("w-full")
-            )
-            # When a feature is selected, harmonize options for other genes, chromosome,
-            # and features
-            self.features.on_value_change(
-                lambda: (
-                    self.harmonize_chrom_options(),
-                    self.harmonize_gene_options(),
-                    self.harmonize_features_options(),
+                .on_value_change(
+                    lambda: (
+                        self.harmonize_chrom_options(),
+                        self.harmonize_gene_options(),
+                        self.harmonize_features_options(),
+                    )
                 )
             )
-
             # Variant impact
             self.impact = ui.select(
                 label="Variant impacts",
@@ -172,7 +171,7 @@ class Search_form(ui.left_drawer):
                     ui.select(label="Chromosome", options=self.chromosomes_list)
                     .tooltip(
                         """Only one at a time, options affected by choice made on gene,
-                        variantand feature."""
+                        variant and feature."""
                     )
                     .classes("w-2/7")
                 )
@@ -182,13 +181,14 @@ class Search_form(ui.left_drawer):
                 )
                 # Selection stop
                 self.stop = ui.number(label="End", min=0, precision=0).classes("w-2/7")
-                # Start can't be higher than Stop
+                # Start can't be higher than Stop, and both of them can't be None
                 self.start.on(
                     "change",
                     lambda: (
+                        (self.start.set_value(0) if self.start.value is None else None),
                         self.stop.set_value(self.start.value)
                         if self.stop.value < self.start.value
-                        else None
+                        else None,
                     ),
                 ).on(
                     "blur",
@@ -197,9 +197,10 @@ class Search_form(ui.left_drawer):
                 self.stop.on(
                     "change",
                     lambda: (
+                        (self.stop.set_value(0) if self.stop.value is None else None),
                         self.start.set_value(self.stop.value)
                         if self.stop.value < self.start.value
-                        else None
+                        else None,
                     ),
                 ).on(
                     "blur",
@@ -213,7 +214,7 @@ class Search_form(ui.left_drawer):
             self.in_gnomad = ui.switch("Variant in gnomAD", value=False)
             # pass_gnomAD
             self.pass_gnomad = ui.switch("Variant pass in gnomAD", value=False)
-            # Switches interactions
+            # Switches interactions: the biggest one automaticly turn True smaller ones
             self.gnomad_regions.on(
                 "click",
                 lambda: (
@@ -318,12 +319,12 @@ class Search_form(ui.left_drawer):
 
     def reset_options(self) -> None:
         """
-        TODO
+        Allow to return to pre-harmonization options for chrom, gene and features.
         """
         # Reseting id/gene/features to harmonize everything
-        self.variant_id.value = ""
-        self.gene.value = None
-        self.features.value = []
+        self.variant_id.set_value("")
+        self.gene.set_value(None)
+        self.features.set_value([])
         # Harmonize options
         self.harmonize_chrom_options()
         self.harmonize_gene_options()
