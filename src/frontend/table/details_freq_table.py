@@ -8,6 +8,9 @@ from nicegui import ui
 # FREQUENCIES TABLE #
 #####################
 def details_freq_table(variant_type: str) -> ui.table:
+    """
+    Return a nicegui table suited for a particular variant_type (if supported).
+    """
     if variant_type == "SNV-Indel":
         return ui.table(
             columns=[
