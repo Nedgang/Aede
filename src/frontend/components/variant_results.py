@@ -208,7 +208,7 @@ class Variant_results(ui.row):
 
     def get_consequences(self, variant_key: str) -> list(dict):
         """
-        TODO
+        Send a get request to the API to obtain list of consequences for a variant_key.
         """
         answer = requests.get(
             "http://localhost:8000/query/v1/consequences/",
