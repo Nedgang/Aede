@@ -56,13 +56,13 @@ def launch_variants_search(
         # be displayed.
         if answer[variant_type]["warning"]:
             ui.notify(
-                answer.json()[variant_type]["message"],
+                answer[variant_type]["message"],
                 type="warning",
                 position="center",
             )
         ui.notify("Results received!")
     else:
-        ui.notify(answer.json()["detail"], type="negative", position="center")
+        ui.notify(answer["detail"], type="negative", position="center")
 
 
 ###############
