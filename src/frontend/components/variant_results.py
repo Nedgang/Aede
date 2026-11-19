@@ -52,6 +52,7 @@ class Variant_results(ui.row):
                 with ui.row():
                     ui.label(variant_type).classes("text-h5")
                     col_selector = ui.button(icon="menu")
+                    self.variants_number = ui.label("No variants searched yet")
                 # Generate aggrid for variant selection
                 self.selector = (
                     variant_selector(variant_type)
@@ -175,6 +176,7 @@ class Variant_results(ui.row):
                 .to_dicts()
             )
             self.selector.run_grid_method("autoSizeAllColumns")
+            self.variants_number.set_text(f"{len(self.request_results)} variants found")
 
     async def display_selected_row(self) -> None:
         """
@@ -235,6 +237,7 @@ class Variant_results(ui.row):
         """
         self.set_request_results([])
         self.selector.options["rowData"].clear()
+        self.variants_number.set_text("No variants searched yet")
         self.element_visibility["variant_details"] = False
         self.selected_variant_details.update(
             {
