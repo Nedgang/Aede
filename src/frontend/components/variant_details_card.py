@@ -75,7 +75,10 @@ class Variant_details(ui.card):
             )
 
     def set_variant_details(self, selected_variant: dict) -> None:
-        """"""
+        """
+        Allow to update the card with the selected variant informations from the variant
+        selector.
+        """
         self.selected_variant_details.update(selected_variant)
         self.selected_variant_freq_table.update_rows(
             [
@@ -92,7 +95,9 @@ class Variant_details(ui.card):
         )
 
     def clear(self) -> None:
-        """"""
+        """
+        Clear everything.
+        """
         self.selected_variant_details.update(
             {
                 col: ""
