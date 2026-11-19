@@ -120,6 +120,7 @@ class Variant_results(ui.row):
                             "text-h5"
                         )
                         col_csq = ui.button(icon="menu")
+                        self.consequences_number = ui.label("")
                         ui.switch("Variant selection", value=True).bind_value_to(
                             self.element_visibility, "variant_selection"
                         )
@@ -203,6 +204,9 @@ class Variant_results(ui.row):
             self.variant_consequences.options["rowData"].clear()
             self.variant_consequences.options["rowData"].extend(
                 self.get_consequences(selected_row["variant_key"])
+            )
+            self.consequences_number.set_text(
+                f"{len(self.variant_consequences.options['rowData'])} consequences found on this variant"
             )
             self.variant_consequences.run_grid_method("autoSizeAllColumns")
         else:
