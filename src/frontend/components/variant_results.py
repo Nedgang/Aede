@@ -7,6 +7,7 @@ from nicegui import ui
 
 from src.frontend.aggrid.variant_consequences import variant_consequences
 from src.frontend.aggrid.variant_selector import variant_selector
+from src.frontend.components.variant_details_card import Variant_details
 from src.frontend.parameters.details_parameters import (
     complementary_freq_details,
     variant_details_label_column,
@@ -79,40 +80,7 @@ class Variant_results(ui.row):
                 .bind_visibility(self.element_visibility, "variant_details")
             ):
                 # Variant details card
-                with ui.card().classes("w-23/100 h-105"):
-                    with ui.row().classes("w-full"):
-                        ui.label(f"Details on {variant_type}").classes("text-h5")
-                    with ui.tabs().classes("w-full") as tabs:
-                        ui.tab("info")
-                        ui.tab("freq")
-                        ui.tab("gnomad")
-                    with ui.tab_panels(tabs, value="info").classes("w-full"):
-                        with ui.tab_panel("info"), ui.grid(columns=2):
-                            for detail in self.details_label_column:
-                                ui.label(detail)
-                                ui.label().bind_text_from(
-                                    self.selected_variant_details,
-                                    self.details_label_column[detail],
-                                )
-                        with ui.tab_panel("freq"):
-                            self.selected_variant_freq_table = details_freq_table(
-                                variant_type
-                            ).classes("w-full")
-                            with ui.grid(columns=2):
-                                for freq in complementary_freq_details(variant_type):
-                                    ui.label(freq)
-                                    ui.label().bind_text_from(
-                                        self.selected_variant_details,
-                                        freq,
-                                    )
-                        with ui.tab_panel("gnomad"), ui.grid(columns=2):
-                            for detail in self.gnomAD_label_column:
-                                ui.label(detail)
-                                ui.label().bind_text_from(
-                                    self.selected_variant_details,
-                                    self.gnomAD_label_column[detail],
-                                    backward=lambda b: str(b),
-                                )
+                self.variant_detail_card = Variant_details(variant_type)
                 # Variant consequences card
                 with ui.card().classes("w-75/100 h-105"):
                     with ui.row():
@@ -187,20 +155,7 @@ class Variant_results(ui.row):
         selected_row = await self.selector.get_selected_row()
         if selected_row:
             self.element_visibility["variant_details"] = True
-            self.selected_variant_details.update(selected_row)
-            self.selected_variant_freq_table.update_rows(
-                [
-                    {
-                        key: row[key]
-                        if key == "pop"
-                        else selected_row[key]
-                        if row["pop"] == "All"
-                        else selected_row[f"{key}_{row['pop']}"]
-                        for key in row
-                    }
-                    for row in self.selected_variant_freq_table.rows
-                ]
-            )
+            self.variant_detail_card.set_variant_details(selected_row)
             self.variant_consequences.options["rowData"].clear()
             self.variant_consequences.options["rowData"].extend(
                 self.get_consequences(selected_row["variant_key"])
@@ -243,18 +198,5 @@ class Variant_results(ui.row):
         self.selector.options["rowData"].clear()
         self.variants_number.set_text("No variants searched yet")
         self.element_visibility["variant_details"] = False
-        self.selected_variant_details.update(
-            {
-                col: ""
-                for col in list(self.details_label_column.values())
-                + list(self.frequencies_label_column.values())
-                + list(self.gnomAD_label_column.values())
-            }
-        )
-        self.selected_variant_freq_table.update_rows(
-            [
-                {key: row[key] if key == "pop" else "" for key in row}
-                for row in self.selected_variant_freq_table.rows
-            ]
-        )
+        self.variant_detail_card.clear()
         self.variant_consequences.options["rowData"].clear()
