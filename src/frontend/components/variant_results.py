@@ -9,12 +9,10 @@ from src.frontend.aggrid.variant_consequences import variant_consequences
 from src.frontend.aggrid.variant_selector import variant_selector
 from src.frontend.components.variant_details_card import Variant_details
 from src.frontend.parameters.details_parameters import (
-    complementary_freq_details,
     variant_details_label_column,
     variant_frequencies_label_column,
     variant_gnomad_label_column,
 )
-from src.frontend.table.details_freq_table import details_freq_table
 
 
 ###################
