@@ -27,17 +27,6 @@ class Variant_results(ui.row):
         self.request_results = pl.DataFrame()
         # Separate visibility status for variant selection and selected variant display
         self.element_visibility = {"variant_selection": True, "variant_details": False}
-        # Get details information (label + column) from parameters depending on variant
-        # type. Will generate details for selected variant informations.
-        self.details_label_column = variant_details_label_column(variant_type)
-        self.frequencies_label_column = variant_frequencies_label_column(variant_type)
-        self.gnomAD_label_column = variant_gnomad_label_column(variant_type)
-        self.selected_variant_details = {
-            col: ""
-            for col in list(self.details_label_column.values())
-            + list(self.frequencies_label_column.values())
-            + list(self.gnomAD_label_column.values())
-        }
         with self:
             # Line with the variant selector aggrid
             with (
@@ -108,9 +97,17 @@ class Variant_results(ui.row):
                         ["variant_key"]
                         + [
                             col
-                            for col in list(self.details_label_column.values())
-                            + list(self.frequencies_label_column.values())
-                            + list(self.gnomAD_label_column.values())
+                            for col in list(
+                                variant_details_label_column(self.variant_type).values()
+                            )
+                            + list(
+                                variant_frequencies_label_column(
+                                    self.variant_type
+                                ).values()
+                            )
+                            + list(
+                                variant_gnomad_label_column(self.variant_type).values()
+                            )
                         ]
                     )
                 )
