@@ -5,8 +5,8 @@ import polars as pl
 import requests
 from nicegui import ui
 
-from src.frontend.aggrid.variant_consequences import variant_consequences
 from src.frontend.aggrid.variant_selector import variant_selector
+from src.frontend.components.variant_consequences_card import Variant_consequences
 from src.frontend.components.variant_details_card import Variant_details
 from src.frontend.parameters.details_parameters import (
     variant_details_label_column,
@@ -80,34 +80,10 @@ class Variant_results(ui.row):
                 # Variant details card
                 self.variant_detail_card = Variant_details(variant_type)
                 # Variant consequences card
-                with ui.card().classes("w-75/100 h-105"):
-                    with ui.row().classes("items-center"):
-                        ui.label(f"Transcript details on {variant_type}").classes(
-                            "text-h5"
-                        )
-                        col_csq = ui.button(icon="menu")
-                        self.consequences_number = ui.label("")
-                        ui.switch("Variant selection", value=True).bind_value_to(
-                            self.element_visibility, "variant_selection"
-                        )
-                    self.variant_consequences = variant_consequences(variant_type)
-                    # Allowing columns selection
-                    with col_csq, ui.menu(), ui.column().classes("'gap-0 p-2'"):
-                        for column in self.variant_consequences.options["columnDefs"]:
-                            ui.switch(
-                                column["headerName"],
-                                value=True,
-                                on_change=lambda switch, column=column: (
-                                    self.variant_consequences.run_grid_method(
-                                        "setColumnsVisible",
-                                        [column["field"]],
-                                        switch.value,
-                                    ),
-                                    self.variant_consequences.run_grid_method(
-                                        "autoSizeAllColumns"
-                                    ),
-                                ),
-                            )
+                self.variant_consequences_card = Variant_consequences(variant_type)
+                self.variant_consequences_card.selector_switch.bind_value_to(
+                    self.element_visibility, "variant_selection"
+                )
 
     def set_request_results(self, search_results: list(dict)) -> None:
         """
@@ -154,14 +130,9 @@ class Variant_results(ui.row):
         if selected_row:
             self.element_visibility["variant_details"] = True
             self.variant_detail_card.set_variant_details(selected_row)
-            self.variant_consequences.options["rowData"].clear()
-            self.variant_consequences.options["rowData"].extend(
+            self.variant_consequences_card.set_consequences(
                 self.get_consequences(selected_row["variant_key"])
             )
-            self.consequences_number.set_text(
-                f"{len(self.variant_consequences.options['rowData'])} consequences found on this variant"
-            )
-            self.variant_consequences.run_grid_method("autoSizeAllColumns")
         else:
             self.element_visibility["variant_details"] = False
 
@@ -197,4 +168,4 @@ class Variant_results(ui.row):
         self.variants_number.set_text("No variants searched yet")
         self.element_visibility["variant_details"] = False
         self.variant_detail_card.clear()
-        self.variant_consequences.options["rowData"].clear()
+        self.variant_consequences_card.clear()
