@@ -48,7 +48,7 @@ class Variant_results(ui.row):
                 ),
                 ui.card().classes("w-99/100 h-105"),
             ):
-                with ui.row():
+                with ui.row().classes("items-center"):
                     ui.label(variant_type).classes("text-h5")
                     col_selector = ui.button(icon="menu")
                     self.variants_number = ui.label("No variants searched yet")
@@ -81,7 +81,7 @@ class Variant_results(ui.row):
                 self.variant_detail_card = Variant_details(variant_type)
                 # Variant consequences card
                 with ui.card().classes("w-75/100 h-105"):
-                    with ui.row():
+                    with ui.row().classes("items-center"):
                         ui.label(f"Transcript details on {variant_type}").classes(
                             "text-h5"
                         )

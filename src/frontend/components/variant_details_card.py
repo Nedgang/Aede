@@ -34,7 +34,7 @@ class Variant_details(ui.card):
             }
             # Card header
             with self:
-                with ui.row().classes("w-full"):
+                with ui.row().classes("w-full").classes("items-center"):
                     ui.label(f"Details on {variant_type}").classes("text-h5")
                 # Create tabs and then populate them
                 with ui.tabs().classes("w-full") as tabs:
