@@ -37,12 +37,12 @@ def variant_consequences(variant_type: str) -> ui.aggrid:
                         "filter": "agTextColumnFilter",
                     },
                     {
-                        "headerName": "Feature_type",
+                        "headerName": "Feature",
                         "field": "csq_Feature_type",
                         "filter": "agTextColumnFilter",
                     },
                     {
-                        "headerName": "Feature",
+                        "headerName": "Transcript ID",
                         "field": "csq_Feature",
                         "filter": "agTextColumnFilter",
                     },
