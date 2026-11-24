@@ -73,8 +73,8 @@ def search_page():
     """
     Main research page.
     """
-    # Finding options from data structure, which lead to automatic update of the front with
-    # data upload
+    # Finding options from data structure, which lead to automatic update of the front
+    # with data upload
     all_variants_type = sorted(
         [
             dir.name
