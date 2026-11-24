@@ -36,6 +36,9 @@ class Search_form(ui.left_drawer):
                 validation=lambda value: (
                     "Must select at least one variant type" if value == [] else None
                 ),
+                on_change=lambda event: (
+                    self.search.enable() if event.value else self.search.disable()
+                ),
             ).classes("w-full")
             # Gene search
             self.gene = (
