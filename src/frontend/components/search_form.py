@@ -115,8 +115,8 @@ class Search_form(ui.left_drawer):
                     if not self.variant_id.error
                     else (
                         ui.notify(
-                            f"""{self.variant_id.value} not in POPGEN database for the request
-                        available chromosomes.""",
+                            f"""{self.variant_id.value} not in POPGEN database for the
+                            request available chromosomes.""",
                             type="warning",
                             position="center",
                         ),
