@@ -57,7 +57,7 @@ class Variant_results(ui.row):
                                 self.selector.run_grid_method(
                                     "setColumnsVisible", [column["field"]], switch.value
                                 ),
-                                self.selector.run_grid_method("autoSizeAllColumns"),
+                                self.selector.run_grid_method("sizeColumnsToFit"),
                             ),
                         )
             # Line with variant details card, and variant consequences card
@@ -115,7 +115,7 @@ class Variant_results(ui.row):
                 .sort("pos")
                 .to_dicts()
             )
-            self.selector.run_grid_method("autoSizeAllColumns")
+            self.selector.run_grid_method("sizeColumnsToFit")
             self.variants_number.set_text(f"{len(self.request_results)} variants found")
 
     async def display_selected_row(self) -> None:
@@ -155,6 +155,15 @@ class Variant_results(ui.row):
             return answer["results"]
         else:
             ui.notify(answer["detail"], type="negative", position="center")
+
+    def size_aggrid_columns(self) -> None:
+        """
+        Size aggrid columns to fit the available space.
+        """
+        self.selector.run_grid_method("sizeColumnsToFit")
+        self.variant_consequences_card.variant_consequences.run_grid_method(
+            "sizeColumnsToFit"
+        )
 
     def clear_display(self) -> None:
         """

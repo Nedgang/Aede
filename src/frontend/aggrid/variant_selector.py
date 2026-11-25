@@ -74,7 +74,6 @@ def variant_selector(variant_type: str) -> ui.aggrid:
                 "rowSelection": {"mode": "singleRow"},
             },
             theme="balham",
-            auto_size_columns=True,
         )
     else:
         raise ValueError(f"{variant_type} not supported yet.")

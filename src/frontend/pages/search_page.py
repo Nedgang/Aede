@@ -1,6 +1,7 @@
 ##########
 # IMPORT #
 ##########
+import asyncio
 import os
 
 import polars as pl
@@ -63,6 +64,19 @@ def launch_variants_search(
         ui.notify("Results received!")
     else:
         ui.notify(answer["detail"], type="negative", position="center")
+
+
+async def toggle_search_form(
+    search_form: Search_form, variant_type_results: dict(str, Variant_results)
+) -> None:
+    """
+    Toggle search form and adapt aggrid size to new space.
+    """
+    search_form.toggle()
+    # Need to await end of animation, or otherwise does not work properly.
+    await asyncio.sleep(0.15)
+    for variant_result in variant_type_results.values():
+        variant_result.size_aggrid_columns()
 
 
 ###############
@@ -155,5 +169,7 @@ def search_page():
         )
     )
     # Link search form toggle to the button in the header
-    header.search_form_button.on_click(lambda: search_form.toggle())
+    header.search_form_button.on_click(
+        lambda: toggle_search_form(search_form, variant_type_results)
+    )
     Footer(elevated=True, fixed=False)

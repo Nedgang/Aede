@@ -35,7 +35,7 @@ class Variant_consequences(ui.card):
                                     switch.value,
                                 ),
                                 self.variant_consequences.run_grid_method(
-                                    "autoSizeAllColumns"
+                                    "sizeColumnsToFit"
                                 ),
                             ),
                         )
@@ -52,9 +52,10 @@ class Variant_consequences(ui.card):
         self.variant_consequences.options["rowData"].clear()
         self.variant_consequences.options["rowData"].extend(consequences)
         self.consequences_number.set_text(
-            f"{len(self.variant_consequences.options['rowData'])} consequences found on this variant"
+            f"""{len(self.variant_consequences.options["rowData"])} consequences found on
+            this variant"""
         )
-        self.variant_consequences.run_grid_method("autoSizeAllColumns")
+        self.variant_consequences.run_grid_method("sizeColumnsToFit")
 
     def clear(self) -> None:
         """

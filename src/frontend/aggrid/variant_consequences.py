@@ -81,7 +81,6 @@ def variant_consequences(variant_type: str) -> ui.aggrid:
                 "rowSelection": {"mode": "None"},
             },
             theme="balham",
-            auto_size_columns=True,
         ).classes("w-full h-9/10")
     else:
         raise ValueError(f"{variant_type} not supported yet.")
