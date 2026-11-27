@@ -6,8 +6,8 @@ import requests
 from nicegui import ui
 
 from src.frontend.aggrid.variant_selector import variant_selector
-from src.frontend.components.variant_consequences_card import Variant_consequences
-from src.frontend.components.variant_details_card import Variant_details
+from src.frontend.cards.variant_consequences_card import Variant_consequences
+from src.frontend.cards.variant_details_card import Variant_details
 from src.frontend.parameters.details_parameters import (
     variant_details_label_column,
     variant_frequencies_label_column,
