@@ -47,6 +47,7 @@ class Variant_results(ui.row):
                     .classes("w-full h-9/10")
                     .on("rowSelected", lambda: self.display_selected_row())
                 )
+                # Keep track of selected columns
                 self.selector_columns = {
                     column["field"]: True
                     for column in self.selector.options["columnDefs"]
@@ -56,7 +57,6 @@ class Variant_results(ui.row):
                     for column in self.selector.options["columnDefs"]:
                         ui.switch(
                             column["headerName"],
-                            value=True,
                             on_change=lambda switch, column=column: (
                                 self.selector.run_grid_method(
                                     "setColumnsVisible", [column["field"]], switch.value
