@@ -47,6 +47,10 @@ class Variant_results(ui.row):
                     .classes("w-full h-9/10")
                     .on("rowSelected", lambda: self.display_selected_row())
                 )
+                self.selector_columns = {
+                    column["field"]: True
+                    for column in self.selector.options["columnDefs"]
+                }
                 # Allowing columns selection
                 with col_selector, ui.menu(), ui.column().classes("'gap-0 p-2'"):
                     for column in self.selector.options["columnDefs"]:
@@ -59,7 +63,7 @@ class Variant_results(ui.row):
                                 ),
                                 self.selector.run_grid_method("sizeColumnsToFit"),
                             ),
-                        )
+                        ).bind_value(self.selector_columns, column["field"])
             # Line with variant details card, and variant consequences card
             with (
                 ui.row()
@@ -117,8 +121,12 @@ class Variant_results(ui.row):
                 .sort("pos")
                 .to_dicts()
             )
-            self.selector.run_grid_method("sizeColumnsToFit")
-            self.variants_number.set_text(f"{len(self.request_results)} variants found")
+        for key in self.selector_columns:
+            self.selector.run_grid_method(
+                "setColumnsVisible", [key], self.selector_columns[key]
+            )
+        self.selector.run_grid_method("sizeColumnsToFit")
+        self.variants_number.set_text(f"{len(self.request_results)} variants found")
 
     async def display_selected_row(self) -> None:
         """
