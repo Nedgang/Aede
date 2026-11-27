@@ -17,7 +17,9 @@ class Variant_selector(ui.card):
             with self:
                 with ui.row().classes("items-center"):
                     ui.label(variant_type).classes("text-h5")
-                    col_selector = ui.button(icon="menu")
+                    col_selector = ui.button(icon="menu").tooltip(
+                        "Choice of columns to display"
+                    )
                     self.variants_number = ui.label("No variants searched yet")
                 # Generate aggrid for variant selection
                 self.selector = variant_selector(variant_type).classes("w-full h-9/10")

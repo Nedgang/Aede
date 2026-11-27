@@ -18,9 +18,13 @@ class Variant_consequences(ui.card):
             with self:
                 with ui.row().classes("items-center"):
                     ui.label(f"Transcript details on {variant_type}").classes("text-h5")
-                    col_csq = ui.button(icon="menu")
+                    col_csq = ui.button(icon="menu").tooltip(
+                        "Choice of columns to display"
+                    )
                     self.consequences_number = ui.label("")
-                    self.selector_switch = ui.switch("Variant selection", value=True)
+                    self.selector_switch = ui.switch(
+                        "Variant selection", value=True
+                    ).tooltip("Display the variant selection panel")
                 self.variant_consequences = variant_consequences(variant_type)
                 # Keep track of selected columns
                 self.consequences_columns = {
