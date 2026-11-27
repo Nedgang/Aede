@@ -90,7 +90,7 @@ class Variant_results(ui.row):
             )
         else:
             self.request_results = pl.DataFrame()
-            self.selector_card.selector.options["rowData"].clear()
+            self.selector_card.clear()
 
     async def display_selected_row(self) -> None:
         """
