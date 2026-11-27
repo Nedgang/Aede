@@ -3,7 +3,7 @@
 ##########
 from nicegui import ui
 
-from src.frontend.parameters.details_parameters import (
+from src.frontend.parameters.variant_details_parameters import (
     complementary_freq_details,
     variant_details_label_column,
     variant_frequencies_label_column,

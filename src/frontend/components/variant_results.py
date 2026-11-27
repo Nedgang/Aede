@@ -8,7 +8,7 @@ from nicegui import ui
 from src.frontend.cards.variant_consequences_card import Variant_consequences
 from src.frontend.cards.variant_details_card import Variant_details
 from src.frontend.cards.variant_selector_card import Variant_selector
-from src.frontend.parameters.details_parameters import (
+from src.frontend.parameters.variant_details_parameters import (
     variant_details_label_column,
     variant_frequencies_label_column,
     variant_gnomad_label_column,
