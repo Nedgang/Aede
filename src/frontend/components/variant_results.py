@@ -5,9 +5,9 @@ import polars as pl
 import requests
 from nicegui import ui
 
-from src.frontend.aggrid.variant_selector import variant_selector
 from src.frontend.cards.variant_consequences_card import Variant_consequences
 from src.frontend.cards.variant_details_card import Variant_details
+from src.frontend.cards.variant_selector_card import Variant_selector
 from src.frontend.parameters.details_parameters import (
     variant_details_label_column,
     variant_frequencies_label_column,
@@ -30,40 +30,15 @@ class Variant_results(ui.row):
         with self:
             # Line with the variant selector aggrid
             with (
-                (
-                    ui.row()
-                    .classes("w-full")
-                    .bind_visibility(self.element_visibility, "variant_selection")
-                ),
-                ui.card().classes("w-99/100 h-105"),
+                ui.row()
+                .classes("w-full")
+                .bind_visibility(self.element_visibility, "variant_selection"),
             ):
-                with ui.row().classes("items-center"):
-                    ui.label(variant_type).classes("text-h5")
-                    col_selector = ui.button(icon="menu")
-                    self.variants_number = ui.label("No variants searched yet")
-                # Generate aggrid for variant selection
-                self.selector = (
-                    variant_selector(variant_type)
-                    .classes("w-full h-9/10")
-                    .on("rowSelected", lambda: self.display_selected_row())
+                self.selector_card = Variant_selector(variant_type)
+                self.selector_card.selector.on(
+                    "rowSelected", lambda: self.display_selected_row()
                 )
-                # Keep track of selected columns
-                self.selector_columns = {
-                    column["field"]: True
-                    for column in self.selector.options["columnDefs"]
-                }
-                # Allowing columns selection
-                with col_selector, ui.menu(), ui.column().classes("'gap-0 p-2'"):
-                    for column in self.selector.options["columnDefs"]:
-                        ui.switch(
-                            column["headerName"],
-                            on_change=lambda switch, column=column: (
-                                self.selector.run_grid_method(
-                                    "setColumnsVisible", [column["field"]], switch.value
-                                ),
-                                self.selector.run_grid_method("sizeColumnsToFit"),
-                            ),
-                        ).bind_value(self.selector_columns, column["field"])
+
             # Line with variant details card, and variant consequences card
             with (
                 ui.row()
@@ -83,21 +58,13 @@ class Variant_results(ui.row):
     def set_request_results(self, search_results: list(dict)) -> None:
         """
         Take results from API call and set it in DataFrame format in self.request_results
+        before setting them to the variant selector card.
         """
         if search_results != []:
             self.request_results = pl.from_dicts(
                 search_results, infer_schema_length=None
             )
-        else:
-            self.request_results = pl.DataFrame()
-
-    def update_selector(self) -> None:
-        """
-        Update selector aggrid using the self.request_results attribute.
-        """
-        self.selector.options["rowData"].clear()
-        if len(self.request_results) > 0:
-            self.selector.options["rowData"].extend(
+            self.selector_card.update_selector(
                 self.request_results.select(
                     pl.col(
                         ["variant_key"]
@@ -121,19 +88,16 @@ class Variant_results(ui.row):
                 .sort("pos")
                 .to_dicts()
             )
-        for key in self.selector_columns:
-            self.selector.run_grid_method(
-                "setColumnsVisible", [key], self.selector_columns[key]
-            )
-        self.selector.run_grid_method("sizeColumnsToFit")
-        self.variants_number.set_text(f"{len(self.request_results)} variants found")
+        else:
+            self.request_results = pl.DataFrame()
+            self.selector_card.selector.options["rowData"].clear()
 
     async def display_selected_row(self) -> None:
         """
         Used to get information on selector aggrid and display details information in the
         variant details card and consequence aggrid.
         """
-        selected_row = await self.selector.get_selected_row()
+        selected_row = await self.selector_card.selector.get_selected_row()
         if selected_row:
             self.element_visibility["variant_details"] = True
             self.variant_detail_card.set_variant_details(selected_row)
@@ -170,7 +134,7 @@ class Variant_results(ui.row):
         """
         Size aggrid columns to fit the available space.
         """
-        self.selector.run_grid_method("sizeColumnsToFit")
+        self.selector_card.selector.run_grid_method("sizeColumnsToFit")
         self.variant_consequences_card.variant_consequences.run_grid_method(
             "sizeColumnsToFit"
         )
@@ -180,8 +144,7 @@ class Variant_results(ui.row):
         Reinitialize variant_results.
         """
         self.set_request_results([])
-        self.selector.options["rowData"].clear()
-        self.variants_number.set_text("No variants searched yet")
         self.element_visibility["variant_details"] = False
+        self.selector_card.clear()
         self.variant_detail_card.clear()
         self.variant_consequences_card.clear()

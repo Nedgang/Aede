@@ -52,7 +52,6 @@ def launch_variants_search(
             variant_type_results[variant_type].set_request_results(
                 answer[variant_type]["results"]
             )
-            variant_type_results[variant_type].update_selector()
         # A partial answer can be provided by the API, so in this case the warning must
         # be displayed.
         if answer[variant_type]["warning"]:
