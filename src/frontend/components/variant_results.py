@@ -73,6 +73,8 @@ class Variant_results(ui.row):
                 self.variant_consequences_card.selector_switch.bind_value_to(
                     self.element_visibility, "variant_selection"
                 )
+        # To have cleaner initial aggrid
+        self.size_aggrid_columns()
 
     def set_request_results(self, search_results: list(dict)) -> None:
         """
